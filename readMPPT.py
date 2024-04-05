@@ -85,26 +85,26 @@ def interpret_register_data(reg_addr, data):
     # Messages for each bit depending on its state (0 or 1)
 
     if reg_addr == 0x21:  # Conditional for register at 0x21
-    # Dictionary to hold the status messages for each bit
-    bit_messages = {
-        7: {0: "VSYS_SHORT_STAT: Normal", 1: "VSYS_SHORT_STAT: Device in SYS short circuit protection"},
-        6: {0: "VSYS_OVP_STAT: Normal", 1: "VSYS_OVP_STAT: Device in SYS over-voltage protection"},
-        5: {0: "OTG_OVP_STAT: Normal", 1: "OTG_OVP_STAT: Device in OTG over-voltage"},
-        4: {0: "OTG_UVP_STAT: Normal", 1: "OTG_UVP_STAT: Device in OTG under voltage"},
-        2: {0: "TSHUT_STAT: Normal", 1: "TSHUT_STAT: Device in thermal shutdown protection"},
-    }
+        # Dictionary to hold the status messages for each bit
+        bit_messages = {
+            7: {0: "VSYS_SHORT_STAT: Normal", 1: "VSYS_SHORT_STAT: Device in SYS short circuit protection"},
+            6: {0: "VSYS_OVP_STAT: Normal", 1: "VSYS_OVP_STAT: Device in SYS over-voltage protection"},
+            5: {0: "OTG_OVP_STAT: Normal", 1: "OTG_OVP_STAT: Device in OTG over-voltage"},
+            4: {0: "OTG_UVP_STAT: Normal", 1: "OTG_UVP_STAT: Device in OTG under voltage"},
+            2: {0: "TSHUT_STAT: Normal", 1: "TSHUT_STAT: Device in thermal shutdown protection"},
+        }
+        
+        # Initialize an empty list to store messages for the current register data
+        messages = []
     
-    # Initialize an empty list to store messages for the current register data
-    messages = []
-
-    # Reserved bits are 0, 1, and 3. They are not used, so no need to add a message for them.
-    # Loop through each bit and append the corresponding message to the messages list
-    for bit in bit_messages:
-        bit_value = (data >> bit) & 0x01
-        messages.append(bit_messages[bit][bit_value])
-
-    # Join all messages with a comma
-    return ', '.join(messages)  # Returns a string of status messages
+        # Reserved bits are 0, 1, and 3. They are not used, so no need to add a message for them.
+        # Loop through each bit and append the corresponding message to the messages list
+        for bit in bit_messages:
+            bit_value = (data >> bit) & 0x01
+            messages.append(bit_messages[bit][bit_value])
+    
+        # Join all messages with a comma
+        return ', '.join(messages)  # Returns a string of status messages
     
     ###################
     if reg_addr == 0x20:
@@ -136,65 +136,65 @@ def interpret_register_data(reg_addr, data):
     ###################
     
     if reg_addr == 0x1F:  # Conditional for register at 0x1F
-    # Dictionary to hold the status messages for each bit
-    bit_messages = {
-        0: {0: "TS_HOT_STAT: Temperature is NOT in the hot range", 1: "TS_HOT_STAT: Temperature is in the hot range, higher than T5"},
-        1: {0: "TS_WARM_STAT: Temperature is NOT in the warm range", 1: "TS_WARM_STAT: Temperature is in the warm range, between T3 and T5"},
-        2: {0: "TS_COOL_STAT: Temperature is NOT in the cool range", 1: "TS_COOL_STAT: Temperature is in the cool range, between T1 and T2"},
-        3: {0: "TS_COLD_STAT: Temperature is NOT in the cold range", 1: "TS_COLD_STAT: Temperature is in the cold range, lower than T1"},
-        4: {0: "VBATOTG_LOW_STAT: Battery voltage is high enough to enable OTG operation", 
-            1: "VBATOTG_LOW_STAT: Battery voltage is too low to enable OTG operation"},
-    }
+        # Dictionary to hold the status messages for each bit
+        bit_messages = {
+            0: {0: "TS_HOT_STAT: Temperature is NOT in the hot range", 1: "TS_HOT_STAT: Temperature is in the hot range, higher than T5"},
+            1: {0: "TS_WARM_STAT: Temperature is NOT in the warm range", 1: "TS_WARM_STAT: Temperature is in the warm range, between T3 and T5"},
+            2: {0: "TS_COOL_STAT: Temperature is NOT in the cool range", 1: "TS_COOL_STAT: Temperature is in the cool range, between T1 and T2"},
+            3: {0: "TS_COLD_STAT: Temperature is NOT in the cold range", 1: "TS_COLD_STAT: Temperature is in the cold range, lower than T1"},
+            4: {0: "VBATOTG_LOW_STAT: Battery voltage is high enough to enable OTG operation", 
+                1: "VBATOTG_LOW_STAT: Battery voltage is too low to enable OTG operation"},
+        }
+        
+        # Initialize an empty list to store messages for the current register data
+        messages = []
     
-    # Initialize an empty list to store messages for the current register data
-    messages = []
-
-    # Bits 5 to 7 are reserved, add a generic message for them if set
-    for bit in range(5, 8):
-        if (data >> bit) & 0x01:
-            messages.append(f"Bit {bit}: Reserved bit is set")
-
-    # Loop through each bit and append the corresponding message to the messages list
-    for bit in bit_messages:
-        bit_value = (data >> bit) & 0x01
-        messages.append(bit_messages[bit][bit_value])
+        # Bits 5 to 7 are reserved, add a generic message for them if set
+        for bit in range(5, 8):
+            if (data >> bit) & 0x01:
+                messages.append(f"Bit {bit}: Reserved bit is set")
     
-    # Join all messages with a comma
-    return ', '.join(messages)  # Returns a string of status messages
+        # Loop through each bit and append the corresponding message to the messages list
+        for bit in bit_messages:
+            bit_value = (data >> bit) & 0x01
+            messages.append(bit_messages[bit][bit_value])
+        
+        # Join all messages with a comma
+        return ', '.join(messages)  # Returns a string of status messages
 
     ###################
 
     if reg_addr == 0x1E:  # Conditional for register at 0x1E
-    # Dictionary to hold the status messages for each bit with context
-    bit_messages = {
-        1: {0: "Pre-charge timer status: Normal", 1: "Pre-charge timer status: Safety timer expired"},
-        3: {0: "CHRG_INHIBIT status: VBUS not above VBUS_MIN (device not ready to charge)", 
-            1: "CHRG_INHIBIT status: VBUS above VBUS_MIN (device ready to charge)"},
-        4: {0: "Fast charge timer status: Not expired", 
-            1: "Fast charge timer status: Safety timer expired"},
-        5: {0: "IINDPM status: Not in DPM regulation", 
-            1: "IINDPM status: In DPM regulation"},
-        6: {0: "VINDPM status: Not in input voltage regulation", 
-            1: "VINDPM status: In input voltage regulation"},
-        7: {0: "Thermal regulation status: No thermal regulation", 
-            1: "Thermal regulation status: Thermal regulation active"},
-    }
-    
-    # Initialize an empty list to store messages for the current register data
-    messages = []
-
-    # Handle the reserved bits
-    reserved_bits = [0, 2]
-    for bit in reserved_bits:
-        messages.append(f"Bit {bit}: Reserved")
-
-    # Loop through each bit and append the corresponding message to the messages list
-    for bit in bit_messages:
-        bit_value = (data >> bit) & 0x01
-        messages.append(bit_messages[bit][bit_value])
-
-    # Join all messages with a comma
-    return ', '.join(messages)  # Returns a string of status messages
+        # Dictionary to hold the status messages for each bit with context
+        bit_messages = {
+            1: {0: "Pre-charge timer status: Normal", 1: "Pre-charge timer status: Safety timer expired"},
+            3: {0: "CHRG_INHIBIT status: VBUS not above VBUS_MIN (device not ready to charge)", 
+                1: "CHRG_INHIBIT status: VBUS above VBUS_MIN (device ready to charge)"},
+            4: {0: "Fast charge timer status: Not expired", 
+                1: "Fast charge timer status: Safety timer expired"},
+            5: {0: "IINDPM status: Not in DPM regulation", 
+                1: "IINDPM status: In DPM regulation"},
+            6: {0: "VINDPM status: Not in input voltage regulation", 
+                1: "VINDPM status: In input voltage regulation"},
+            7: {0: "Thermal regulation status: No thermal regulation", 
+                1: "Thermal regulation status: Thermal regulation active"},
+        }
+        
+        # Initialize an empty list to store messages for the current register data
+        messages = []
+        
+        # Handle the reserved bits
+        reserved_bits = [0, 2]
+        for bit in reserved_bits:
+            messages.append(f"Bit {bit}: Reserved")
+        
+        # Loop through each bit and append the corresponding message to the messages list
+        for bit in bit_messages:
+            bit_value = (data >> bit) & 0x01
+            messages.append(bit_messages[bit][bit_value])
+        
+        # Join all messages with a comma
+        return ', '.join(messages)  # Returns a string of status messages
 
     ###################
 
