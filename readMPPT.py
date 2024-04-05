@@ -84,7 +84,152 @@ def read_register_data(reg_addr, length):
 def interpret_register_data(reg_addr, data):
     # Messages for each bit depending on its state (0 or 1)
 
+    if reg_addr == 0x31:  # IBUS_ADC register
+        # Assume data is a tuple of two bytes (high_byte, low_byte)
+        high_byte, low_byte = data
+        # Combine the two 8-bit values to form a single 16-bit value
+        raw_value = (high_byte << 8) | low_byte
+
+        # Interpret the 16-bit raw value as a signed integer (2's complement)
+        if raw_value & 0x8000:  # if the sign bit is set
+            adc_value = raw_value - 0x10000
+        else:
+            adc_value = raw_value
+
+        # Convert the ADC value to current (in mA) as the step size is 1mA
+        current = adc_value  # The step size is 1mA
+
+        return f"IBUS ADC Current: {current} mA"
     
+    ###################
+    if reg_addr == 0x30:
+        adc_channels = {
+        "D+ ADC": (data >> 7) & 0x01,
+        "D- ADC": (data >> 6) & 0x01,
+        "VAC2 ADC": (data >> 5) & 0x01,
+        "VAC1 ADC": (data >> 4) & 0x01
+        }
+    
+        status = {channel: "Disabled" if state else "Enabled" for channel, state in adc_channels.items()}
+        # Reserved bits (3-0) are not used for any functionality.
+    
+        return status
+    
+    ###################
+    if reg_addr == 0x2F:
+        def interpret_reg2f(data):
+        adc_controls = {
+            "IBUS_ADC": (data >> 7) & 0x01,
+            "IBAT_ADC": (data >> 6) & 0x01,
+            "VBUS_ADC": (data >> 5) & 0x01,
+            "VBAT_ADC": (data >> 4) & 0x01,
+            "VSYS_ADC": (data >> 3) & 0x01,
+            "TS_ADC": (data >> 2) & 0x01,
+            "TDIE_ADC": (data >> 1) & 0x01
+        }
+    
+        status = {name: "Disabled" if state else "Enabled" for name, state in adc_controls.items()}
+        # Bit 0 is reserved and thus not included in the interpretation.
+    
+        return status
+        
+    ###################
+    if reg_addr == 0x2E:
+        adc_control = "Enabled" if data & 0x80 else "Disabled"
+        adc_rate = "Continuous conversion" if data & 0x40 else "One-shot conversion"
+        adc_sample_speed = {
+            0b00: "15-bit resolution",
+            0b01: "14-bit resolution",
+            0b10: "13-bit resolution",
+            0b11: "12-bit resolution (not recommended)"
+        }[(data >> 4) & 0x03]
+        adc_avg = "Running average" if data & 0x08 else "Single value"
+        adc_avg_init = "Start average with new ADC conversion" if data & 0x04 else "Start average with existing register value"
+    
+        return {
+            "ADC Control": adc_control,
+            "ADC Conversion Rate": adc_rate,
+            "ADC Sample Speed": adc_sample_speed,
+            "ADC Average Control": adc_avg,
+            "ADC Average Init Control": adc_avg_init
+        }
+        
+    ###################
+    if reg_addr == 0x2D:
+        masks = {
+            7: "VSYS short circuit INT",
+            6: "VSYS over-voltage INT",
+            5: "OTG over-voltage INT",
+            4: "OTG under-voltage INT",
+            2: "Thermal shutdown INT"
+        }
+    
+        status = {}
+        for bit_position, description in masks.items():
+            mask_value = (data >> bit_position) & 0x01
+            status[description] = 'masked' if mask_value else 'unmasked'
+    
+        # Reserved bits (bits 3 and bits 1-0) are not used, so they don't affect functionality.
+    
+        return status
+
+    ###################
+    if reg_addr == 0x2C:
+         masks = {
+            7: "IBAT regulation INT",
+            6: "VBUS over-voltage INT",
+            5: "VBAT over-voltage INT",
+            4: "IBUS over-current INT",
+            3: "IBAT over-current INT",
+            2: "Converter over-current INT",
+            1: "VAC2 over-voltage INT",
+            0: "VAC1 over-voltage INT"
+        }
+    
+        status = []
+        for bit_position, description in masks.items():
+            mask_value = (data >> bit_position) & 0x01
+            status.append(f"{description}: {'masked' if mask_value else 'unmasked'}")
+        
+        return status
+    ###################
+    if reg_addr == 0x2B:
+        masks = {
+        "VBATOTG_LOW_MASK": "VBAT too low to enable OTG INT",
+        "TS_COLD_MASK": "TS cold temperature INT",
+        "TS_COOL_MASK": "TS cool temperature INT",
+        "TS_WARM_MASK": "TS warm temperature INT",
+        "TS_HOT_MASK": "TS hot temperature INT"
+        }
+
+        status = []
+        for bit_position, description in enumerate(masks.values(), start=0):
+            mask_value = (data >> bit_position) & 0x01
+            status.append(f"{description}: {'masked' if mask_value else 'unmasked'}")
+    
+        # Reserved bits (bits 7-5) handling is not required as they are reserved and should not affect functionality.
+        
+        return status
+    ###################
+    if reg_addr == 0x2A:
+        masks = {
+        "DPDM_DONE_MASK": "D+/D- detection done INT",
+        "ADC_DONE_MASK": "ADC conversion done INT",
+        "VSYSP_MASK": "VSYSP min regulation INT",
+        "CHG_TMR_MASK": "Fast charge timer INT",
+        "TRICHG_TMR_MASK": "Trickle charge timer INT",
+        "PRECHG_TMR_MASK": "Pre-charge timer INT",
+        "TOPOFF_TMR_MASK": "Top off timer INT"
+        }
+
+        status = []
+        for bit, name in masks.items():
+            mask_value = (data >> masks.keys().index(bit)) & 0x01
+            status.append(f"{name}: {'masked' if mask_value else 'unmasked'}")
+    
+        # Reserved bit (bit 7) handling is not required as it is reserved and should not affect functionality.
+        return status
+        
     ###################
     if reg_addr == 0x29:
         bit_messages = {
