@@ -84,6 +84,28 @@ def read_register_data(reg_addr, length):
 def interpret_register_data(reg_addr, data):
     # Messages for each bit depending on its state (0 or 1)
 
+    if reg_addr == 0x21:  # Conditional for register at 0x21
+    # Dictionary to hold the status messages for each bit
+    bit_messages = {
+        7: {0: "VSYS_SHORT_STAT: Normal", 1: "VSYS_SHORT_STAT: Device in SYS short circuit protection"},
+        6: {0: "VSYS_OVP_STAT: Normal", 1: "VSYS_OVP_STAT: Device in SYS over-voltage protection"},
+        5: {0: "OTG_OVP_STAT: Normal", 1: "OTG_OVP_STAT: Device in OTG over-voltage"},
+        4: {0: "OTG_UVP_STAT: Normal", 1: "OTG_UVP_STAT: Device in OTG under voltage"},
+        2: {0: "TSHUT_STAT: Normal", 1: "TSHUT_STAT: Device in thermal shutdown protection"},
+    }
+    
+    # Initialize an empty list to store messages for the current register data
+    messages = []
+
+    # Reserved bits are 0, 1, and 3. They are not used, so no need to add a message for them.
+    # Loop through each bit and append the corresponding message to the messages list
+    for bit in bit_messages:
+        bit_value = (data >> bit) & 0x01
+        messages.append(bit_messages[bit][bit_value])
+
+    # Join all messages with a comma
+    return ', '.join(messages)  # Returns a string of status messages
+    
     ###################
     if reg_addr == 0x20:
         bit_messages = {
@@ -110,6 +132,197 @@ def interpret_register_data(reg_addr, data):
     
         # Join all messages with a newline character and return the result
         return "\n".join(messages)
+
+    ###################
+    
+    if reg_addr == 0x1F:  # Conditional for register at 0x1F
+    # Dictionary to hold the status messages for each bit
+    bit_messages = {
+        0: {0: "TS_HOT_STAT: Temperature is NOT in the hot range", 1: "TS_HOT_STAT: Temperature is in the hot range, higher than T5"},
+        1: {0: "TS_WARM_STAT: Temperature is NOT in the warm range", 1: "TS_WARM_STAT: Temperature is in the warm range, between T3 and T5"},
+        2: {0: "TS_COOL_STAT: Temperature is NOT in the cool range", 1: "TS_COOL_STAT: Temperature is in the cool range, between T1 and T2"},
+        3: {0: "TS_COLD_STAT: Temperature is NOT in the cold range", 1: "TS_COLD_STAT: Temperature is in the cold range, lower than T1"},
+        4: {0: "VBATOTG_LOW_STAT: Battery voltage is high enough to enable OTG operation", 
+            1: "VBATOTG_LOW_STAT: Battery voltage is too low to enable OTG operation"},
+    }
+    
+    # Initialize an empty list to store messages for the current register data
+    messages = []
+
+    # Bits 5 to 7 are reserved, add a generic message for them if set
+    for bit in range(5, 8):
+        if (data >> bit) & 0x01:
+            messages.append(f"Bit {bit}: Reserved bit is set")
+
+    # Loop through each bit and append the corresponding message to the messages list
+    for bit in bit_messages:
+        bit_value = (data >> bit) & 0x01
+        messages.append(bit_messages[bit][bit_value])
+    
+    # Join all messages with a comma
+    return ', '.join(messages)  # Returns a string of status messages
+
+    ###################
+
+    if reg_addr == 0x1E:  # Conditional for register at 0x1E
+    # Dictionary to hold the status messages for each bit with context
+    bit_messages = {
+        1: {0: "Pre-charge timer status: Normal", 1: "Pre-charge timer status: Safety timer expired"},
+        3: {0: "CHRG_INHIBIT status: VBUS not above VBUS_MIN (device not ready to charge)", 
+            1: "CHRG_INHIBIT status: VBUS above VBUS_MIN (device ready to charge)"},
+        4: {0: "Fast charge timer status: Not expired", 
+            1: "Fast charge timer status: Safety timer expired"},
+        5: {0: "IINDPM status: Not in DPM regulation", 
+            1: "IINDPM status: In DPM regulation"},
+        6: {0: "VINDPM status: Not in input voltage regulation", 
+            1: "VINDPM status: In input voltage regulation"},
+        7: {0: "Thermal regulation status: No thermal regulation", 
+            1: "Thermal regulation status: Thermal regulation active"},
+    }
+    
+    # Initialize an empty list to store messages for the current register data
+    messages = []
+
+    # Handle the reserved bits
+    reserved_bits = [0, 2]
+    for bit in reserved_bits:
+        messages.append(f"Bit {bit}: Reserved")
+
+    # Loop through each bit and append the corresponding message to the messages list
+    for bit in bit_messages:
+        bit_value = (data >> bit) & 0x01
+        messages.append(bit_messages[bit][bit_value])
+
+    # Join all messages with a comma
+    return ', '.join(messages)  # Returns a string of status messages
+
+    ###################
+
+    if reg_addr == 0x1D:  # Conditional for register at 0x1D
+        # Dictionary to hold the status messages for each bit
+        bit_messages = {
+            0: {0: "VBAT NOT present", 1: "VBAT present"},
+            1: {0: "D+/D- detection is NOT started, or the detection is done", 1: "D+/D- detection is ongoing"},
+            2: {0: "Device in Normal thermal regulation", 1: "Device in thermal regulation"},
+            # Bits 3 to 5 are reserved
+            6: {0: "ICO disabled", 1: "ICO optimization in progress", 2: "Maximum input current detected", 3: "Reserved"},
+            7: {}  # Bit 7 is reserved
+        }
+        
+        # Initialize an empty list to store messages for the current register data
+        messages = []
+
+        # Handling for single-bit fields
+        messages.append(bit_messages[0][data & 0x01])
+        messages.append(bit_messages[1][(data >> 1) & 0x01])
+        messages.append(bit_messages[2][(data >> 2) & 0x01])
+
+        # Handling for multi-bit fields
+        ico_stat = (data >> 6) & 0x03
+        if ico_stat in bit_messages[6]:
+            messages.append(bit_messages[6][ico_stat])
+        else:
+            messages.append("ICO Status: Reserved")
+        
+        # Join all messages with a comma
+        return ', '.join(filter(None, messages))  # filter is used to remove empty messages
+
+    ###################
+
+    if reg_addr == 0x1C:  # Conditional for register at 0x1C
+        # Dictionary to hold the status messages for each bit
+        bit_messages = {
+            'CHG_STAT': {
+                0: "Not Charging",
+                1: "Trickle Charge",
+                2: "Pre Charge",
+                3: "Fast Charge (CC mode)",
+                4: "Taper Charge (CV mode)",
+                5: "Reserved",
+                6: "Top-off Timer Active Charging",
+                7: "Charge Termination Done"
+            },
+            'VBUS_STAT': {
+                0: "No input or DPM or BQOCL in OTG mode",
+                1: "USB host SDP (0.5A)",
+                2: "USB CDP (1.5A)",
+                3: "USB DCP (3.25A)",
+                4: "Adjustable High Voltage DCP (>3.25A)",
+                5: "Unknown adapter",
+                6: "Non-standard adapter (1A/2.1A/2.4A)",
+                7: "Non-qualified adapter"
+            },
+            'DPM_STAT': {
+                0: "Not DPM",
+                1: "DPM"
+            },
+            'PG_STAT': {
+                0: "Power NOT good",
+                1: "Power good"
+            },
+            'THERM_STAT': {
+                0: "Thermistor NOT in regulation",
+                1: "Thermistor in regulation"
+            },
+            'VSYS_STAT': {
+                0: "VSYS NOT regulated",
+                1: "VSYS regulated"
+            },
+            'CHRG_DONE': {
+                0: "Charge NOT done",
+                1: "Charge done"
+            }
+        }
+        
+        # Initialize an empty list to store messages for the current register data
+        messages = []
+
+        # Interpretation for VBUS_STAT (bits 6-4)
+        vbus_stat = (data >> 4) & 0x07
+        messages.append(bit_messages['VBUS_STAT'][vbus_stat])
+
+        # Interpretation for CHG_STAT (bits 3-2)
+        chg_stat = (data >> 2) & 0x03
+        messages.append(bit_messages['CHG_STAT'][chg_stat])
+
+        # Interpretation for single-bit statuses
+        messages.append(bit_messages['DPM_STAT'][(data >> 1) & 0x01])
+        messages.append(bit_messages['PG_STAT'][(data >> 3) & 0x01])
+        messages.append(bit_messages['THERM_STAT'][(data >> 5) & 0x01])
+        messages.append(bit_messages['VSYS_STAT'][(data >> 6) & 0x01])
+        messages.append(bit_messages['CHRG_DONE'][(data >> 7) & 0x01])
+
+        # Combine messages
+        return ', '.join(filter(None, messages))  # filter is used to remove empty messages
+
+    ####################
+    
+    if reg_addr == 0x1B:  # Conditional for register at 0x1B
+        # Dictionary to hold the status messages for each bit
+        bit_messages = {
+            0: {0: "VBUS NOT present", 1: "VBUS present (above present threshold)"},
+            1: {0: "AC1 NOT present", 1: "AC1 present (above present threshold)"},
+            2: {0: "AC2 NOT present", 1: "AC2 present (above present threshold)"},
+            3: {0: "Power OK NOT in good status", 1: "Power OK in good status"},
+            4: {0: "", 1: ""},  # Reserved or not specified in the given image
+            5: {0: "Watchdog timer NOT expired", 1: "Watchdog timer expired"},
+            6: {0: "VINDPM NOT in regulation or VOTG NOT in regulation", 1: "VINDPM in regulation or VOTG in regulation"},
+            7: {0: "IN DPM or IOTG mode OFF", 1: "IN DPM or IOTG mode ON"}
+        }
+        
+        # Initialize an empty list to store messages for the current register data
+        messages = []
+
+        # Iterate through each bit position and their corresponding messages
+        for bit_pos in range(8):
+            # Determine the state of the bit at bit_pos (0 or 1)
+            bit_state = (data >> bit_pos) & 1
+            # If there's a message defined for the bit state, append it to the messages list
+            if bit_messages[bit_pos][bit_state]:
+                messages.append(bit_messages[bit_pos][bit_state])
+
+        # Join all messages with a comma and return the result
+        return ', '.join(messages)
 
     ###################
     if reg_addr == 0x19:  # Assuming 0x19 is the address of the ICO_Current_Limit Register
