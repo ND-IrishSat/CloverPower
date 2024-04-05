@@ -319,7 +319,319 @@ def interpret_register_data(reg_addr, data):
 
     ###################
 
-    
+    if reg_addr == 0x13:  # Conditional for register at 0x13
+        # Interpret the EN_ACDC2 bit (bit 7)
+        en_acdc2_msg = "AC/DC2 driver control active" if (data >> 7) & 0x01 else "AC/DC2 driver control off (default)"
+        
+        # Interpret the EN_ACDC1 bit (bit 6)
+        en_acdc1_msg = "AC/DC1 driver control active" if (data >> 6) & 0x01 else "AC/DC1 driver control off (default)"
+        
+        # Interpret the PWM_FREQ bit (bit 5)
+        pwm_freq_msg = "1.5 MHz" if (data >> 5) & 0x01 else "750 kHz (default)"
+        
+        # Interpret the DIS_STAT bit (bit 4)
+        dis_stat_msg = "STAT pin output disable" if (data >> 4) & 0x01 else "STAT pin output enable (default)"
+        
+        # Interpret the DIS_VSYS_SHORT bit (bit 3)
+        dis_vsys_short_msg = "VSYS short hiccup protection disable" if (data >> 3) & 0x01 else "VSYS short hiccup protection enable (default)"
+        
+        # Interpret the DIS_VOTP_LDO bit (bit 2)
+        dis_votp_ldo_msg = "VOTP LDO hiccup protection disable" if (data >> 2) & 0x01 else "VOTP LDO hiccup protection enable (default)"
+        
+        # Interpret the FORCE_VINDPM bit (bit 1)
+        force_vindpm_msg = "VINDPM force operation" if (data >> 1) & 0x01 else "VINDPM auto operation (default)"
+        
+        # Interpret the EN_IBUS_OCP bit (bit 0)
+        en_ibus_ocp_msg = "IBUS OCP in forward mode enable" if data & 0x01 else "IBUS OCP disable (default)"
+        
+        # Combine messages
+        return f"EN_ACDC2: {en_acdc2_msg}, EN_ACDC1: {en_acdc1_msg}, PWM_FREQ: {pwm_freq_msg}, DIS_STAT: {dis_stat_msg}, DIS_VSYS_SHORT: {dis_vsys_short_msg}, DIS_VOTP_LDO: {dis_votp_ldo_msg}, FORCE_VINDPM: {force_vindpm_msg}, EN_IBUS_OCP: {en_ibus_ocp_msg}"
+
+    ####################
+
+    if reg_addr == 0x12:  # Conditional for register at 0x12
+        # Interpret each bit based on the datasheet information
+        dis_acdrv_msg = "ACDRV disabled" if (data >> 7) & 0x01 else "ACDRV enabled (default)"
+        en_otg_msg = "OTG enabled" if (data >> 6) & 0x01 else "OTG disabled (default)"
+        pfm_otg_dis_msg = "PFM in OTG mode disabled" if (data >> 5) & 0x01 else "PFM in OTG mode enabled (default)"
+        pfm_fwd_dis_msg = "PFM in forward mode disabled" if (data >> 4) & 0x01 else "PFM in forward mode enabled (default)"
+        wkup_dly_msg = "15ms wake-up delay" if (data >> 3) & 0x01 else "0ms wake-up delay (default)"
+        dis_ldo_msg = "BATFET LDO disabled" if (data >> 2) & 0x01 else "BATFET LDO enabled (default)"
+        dis_otg_ooa_msg = "OOA in OTG mode disabled" if (data >> 1) & 0x01 else "OOA in OTG mode enabled (default)"
+        dis_fwd_ooa_msg = "OOA in forward mode disabled" if data & 0x01 else "OOA in forward mode enabled (default)"
+        
+        # Combine messages
+        return f"DIS_ACDRV: {dis_acdrv_msg}, EN_OTG: {en_otg_msg}, PFM_OTG_DIS: {pfm_otg_dis_msg}, PFM_FWD_DIS: {pfm_fwd_dis_msg}, WKUP_DLY: {wkup_dly_msg}, DIS_LDO: {dis_ldo_msg}, DIS_OTG_OOA: {dis_otg_ooa_msg}, DIS_FWD_OOA: {dis_fwd_ooa_msg}"
+
+    ####################
+
+    if reg_addr == 0x11:  # Conditional for register at 0x11
+        # Interpret the FORCE_INDET bit (bit 7)
+        force_indet_msg = "Force NDETP detection" if (data >> 7) & 0x01 else "Do not force NDETP detection (default)"
+        
+        # Interpret the AUTO_INDET_EN bit (bit 6)
+        auto_indet_en_msg = "Auto NDETP detection enable" if (data >> 6) & 0x01 else "Auto NDETP detection disable (default)"
+        
+        # Interpret the EN_12V bit (bit 5)
+        en_12v_msg = "Enable 12V mode in NVDCP" if (data >> 5) & 0x01 else "Disable 12V mode in NVDCP (default)"
+        
+        # Interpret the EN_9V bit (bit 4)
+        en_9v_msg = "Enable 9V mode in NVDCP" if (data >> 4) & 0x01 else "Disable 9V mode in NVDCP (default)"
+        
+        # Interpret the NVDCP_EN bit (bit 3)
+        nvdcp_en_msg = "NVDCP handshake enable" if (data >> 3) & 0x01 else "NVDCP handshake disable (default)"
+        
+        # Interpret the SDRV_CTRL bits (bits 2-1)
+        sdrv_ctrl = (data >> 1) & 0x03
+        sdrv_ctrl_msg = {
+            0: "REE",
+            1: "Shutdown Mode",
+            2: "Ship Mode",
+            3: "System Power Reset"
+        }.get(sdrv_ctrl, "Unknown SDRV_CTRL setting")
+        
+        # Interpret the SDRV_DLY bit (bit 0)
+        sdrv_dly_msg = "Add 10s delay time" if data & 0x01 else "Do not add 10s delay time (default)"
+        
+        # Combine messages
+        return f"FORCE_INDET: {force_indet_msg}, AUTO_INDET_EN: {auto_indet_en_msg}, EN_12V: {en_12v_msg}, EN_9V: {en_9v_msg}, NVDCP_EN: {nvdcp_en_msg}, SDRV_CTRL: {sdrv_ctrl_msg}, SDRV_DLY: {sdrv_dly_msg}"
+
+    ###################
+
+    if reg_addr == 0x10:  # Conditional for register at 0x10
+        # Interpret the VAC_OVP bits (bits 5-4)
+        vac_ovp = (data >> 4) & 0x03
+        vac_ovp_msg = {
+            0: "16V (default)",
+            1: "22V",
+            2: "12V",
+            3: "7V"
+        }.get(vac_ovp, "Unknown VAC_OVP setting")
+        
+        # Interpret the WD_RST bit (bit 3)
+        wd_rst_msg = "Reset" if (data >> 3) & 0x01 else "Normal (default)"
+        
+        # Interpret the WATCHDOG_2 bits (bits 2-0)
+        watchdog_2 = data & 0x07
+        watchdog_2_msg = {
+            0: "Disable",
+            1: "0.5s",
+            2: "1s",
+            3: "2s",
+            4: "20s",
+            5: "40s (default)",
+            6: "80s",
+            7: "160s"
+        }.get(watchdog_2, "Unknown WATCHDOG_2 setting")
+        
+        # Combine messages
+        return f"VAC_OVP: {vac_ovp_msg}, WD_RST: {wd_rst_msg}, WATCHDOG_2: {watchdog_2_msg}"
+
+    ####################
+
+    if reg_addr == 0x0F:  # Conditional for register at 0x0F
+        # Interpret the EN_AUTO_IBATDIS bit (bit 7)
+        en_auto_ibatdis_msg = "Enable auto battery discharging" if (data >> 7) & 0x01 else "Disable auto battery discharging (default)"
+        
+        # Interpret the FORCE_IBATDIS bit (bit 6)
+        force_ibatdis_msg = "Force battery discharging current" if (data >> 6) & 0x01 else "Do not force battery discharging current (default)"
+        
+        # Interpret the EN_CHG bit (bit 5)
+        en_chg_msg = "Charger enabled" if (data >> 5) & 0x01 else "Charger disabled (default)"
+        
+        # Interpret the EN_ICO bit (bit 4)
+        en_ico_msg = "Input Current Optimizer (ICO) enabled" if (data >> 4) & 0x01 else "Input Current Optimizer (ICO) disabled (default)"
+        
+        # Interpret the FORCE_ICO bit (bit 3)
+        force_ico_msg = "Force start ICO" if (data >> 3) & 0x01 else "Do not force start ICO (default)"
+        
+        # Interpret the EN_HIZ bit (bit 2)
+        en_hiz_msg = "Enable HIZ mode" if (data >> 2) & 0x01 else "Disable HIZ mode (default)"
+        
+        # Interpret the EN_TERM bit (bit 1)
+        en_term_msg = "Enable termination" if (data >> 1) & 0x01 else "Disable termination (default)"
+        
+        # Bit 0 is reserved
+        
+        # Combine messages
+        return f"EN_AUTO_IBATDIS: {en_auto_ibatdis_msg}, FORCE_IBATDIS: {force_ibatdis_msg}, EN_CHG: {en_chg_msg}, EN_ICO: {en_ico_msg}, FORCE_ICO: {force_ico_msg}, EN_HIZ: {en_hiz_msg}, EN_TERM: {en_term_msg}"
+
+    ####################
+
+    if reg_addr == 0x0E:  # Conditional for register at 0x0E
+        # Interpret the TOP_OFF_TIMER bits (bits 7-6)
+        top_off_timer = (data >> 6) & 0x03
+        top_off_timer_msg = {
+            0: "Disabled",
+            1: "15 mins",
+            2: "30 mins",
+            3: "45 mins"
+        }.get(top_off_timer, "Unknown TOP_OFF_TIMER setting")
+        
+        # Interpret the EN_TRICHG_TIMER bit (bit 5)
+        en_trichg_timer_msg = "Trickle charge timer enabled" if (data >> 5) & 0x01 else "Trickle charge timer disabled (default)"
+        
+        # Interpret the EN_PRECHG_TIMER bit (bit 4)
+        en_prechg_timer_msg = "Pre-charge timer enabled" if (data >> 4) & 0x01 else "Pre-charge timer disabled (default)"
+        
+        # Interpret the EN_CHG_TIMER bit (bit 3)
+        en_chg_timer_msg = "Fast charge timer enabled" if (data >> 3) & 0x01 else "Fast charge timer disabled (default)"
+        
+        # Interpret the CHG_TIMER bits (bits 2-1)
+        chg_timer = (data >> 1) & 0x03
+        chg_timer_msg = {
+            0: "5 hrs",
+            1: "8 hrs",
+            2: "12 hrs (default)",
+            3: "20 hrs"
+        }.get(chg_timer, "Unknown CHG_TIMER setting")
+        
+        # Interpret the TMR2X_EN bit (bit 0)
+        tmr2x_en_msg = "Timer slowed by 2x during DPM or thermal regulation" if data & 0x01 else "Timer not slowed (default)"
+        
+        # Combine messages
+        return f"TOP_OFF_TIMER: {top_off_timer_msg}, EN_TRICHG_TIMER: {en_trichg_timer_msg}, EN_PRECHG_TIMER: {en_prechg_timer_msg}, EN_CHG_TIMER: {en_chg_timer_msg}, CHG_TIMER: {chg_timer_msg}, TMR2X_EN: {tmr2x_en_msg}"
+
+    ###################
+
+    if reg_addr == 0x0D:  # Conditional for register at 0x0D
+        # Interpret the PRECHG_TMR bit (bit 7)
+        prechg_tmr_msg = "0.5 hrs pre-charge safety timer" if (data >> 7) & 0x01 else "2 hrs pre-charge safety timer (default)"
+        
+        # Interpret the IOTG_6_0 bits (bits 6-0)
+        # The IOTG current limit value is determined by the bits' decimal value times the step size (40mA)
+        iotg_6_0_value = data & 0x7F  # Mask all but the 7 bits for IOTG
+        iotg_6_0_current_limit = iotg_6_0_value * 40  # Calculate the current limit
+        iotg_6_0_msg = f"{iotg_6_0_current_limit}mA OTG current limit"
+        
+        # Combine messages
+        return f"PRECHG_TMR: {prechg_tmr_msg}, IOTG_6_0: {iotg_6_0_msg}"
+
+    ###################
+
+    if reg_addr == 0x0B:  # Conditional for register at 0x0B
+        # Extract the 11-bit VOTG value (bits 10-0)
+        votg_value = data & 0x7FF  # Mask all but the 11 bits for VOTG
+        # Calculate the regulation voltage
+        votg_regulation_voltage = 2800 + (votg_value * 10)  # Add the offset to the value obtained from the bits
+        votg_msg = f"{votg_regulation_voltage}mV OTG regulation voltage"
+        
+        # Combine messages
+        return f"VOTG: {votg_msg}"
+
+    ###################
+
+     if reg_addr == 0x0A:  # Conditional for register at 0x0A
+        # Extract the CELL bits (bits 7-6), if applicable
+        cell_value = (data >> 6) & 0x03
+        cell_msg = f"{cell_value}-cell battery"  # Placeholder message, actual message depends on datasheet details
+        
+        # Extract the TREC bits (bits 5-4)
+        trec_value = (data >> 4) & 0x03
+        trec_msg = {
+            0: "64ms",
+            1: "256ms",
+            2: "1024ms (default)",
+            3: "2048ms"
+        }.get(trec_value, "Unknown TREC setting")
+        
+        # Extract the VRECHG bits (bits 3-0)
+        vrechg_value = data & 0x0F
+        vrechg_voltage = 50 + (vrechg_value * 50)  # Calculate the voltage offset
+        vrechg_msg = f"{vrechg_voltage}mV below VREG"
+        
+        # Combine messages
+        return f"CELL: {cell_msg}, TREC: {trec_msg}, VRECHG: {vrechg_msg}"
+
+    ####################
+
+    if reg_addr == 0x09:  # Conditional for register at 0x09
+        # Interpret the STOP_WD_CHG bit (bit 5)
+        stop_wd_chg_msg = "WD timer expiration sets EN_CHG=0" if (data >> 5) & 0x01 else "WD timer expiration keeps existing EN_CHG setting (default)"
+        
+        # Interpret the ITERM bits (bits 4-0)
+        # The ITERM current limit value is determined by the bits' decimal value times the step size (40mA)
+        iterm_value = data & 0x1F  # Mask all but the 5 bits for ITERM
+        iterm_current_limit = iterm_value * 40  # Calculate the current limit
+        iterm_msg = f"{iterm_current_limit}mA termination current"
+        
+        # Combine messages
+        return f"STOP_WD_CHG: {stop_wd_chg_msg}, ITERM: {iterm_msg}"
+
+    ###################
+
+    if reg_addr == 0x08:  # Conditional for register at 0x08
+        # Interpret the VBAT_LOVW bits (bits 7-6)
+        vbat_lowv = (data >> 6) & 0x03
+        vbat_lowv_msg = {
+            0: "15% VREG",
+            1: "62.2% VREG",
+            2: "66.7% VREG",
+            3: "71.4% VREG"
+        }.get(vbat_lowv, "Unknown VBAT_LOWV setting")
+        
+        # Interpret the IPRECHG bits (bits 5-0)
+        # The IPRECHG current limit value is determined by the bits' decimal value times the step size (40mA)
+        iprechg_value = data & 0x3F  # Mask all but the 6 bits for IPRECHG
+        iprechg_current_limit = iprechg_value * 40  # Calculate the current limit
+        iprechg_msg = f"{iprechg_current_limit}mA precharge current limit"
+        
+        # Combine messages
+        return f"VBAT_LOWV: {vbat_lowv_msg}, IPRECHG: {iprechg_msg}"
+
+    ###################
+
+    if reg_addr == 0x06:  # Conditional for register at 0x06
+        # The IINLIM value is determined by the 8-bit value multiplied by the step size (10mA)
+        iinlim_value = data & 0xFF  # Extract the 8-bit value
+        iinlim_current_limit = iinlim_value * 10  # Calculate the current limit (step size is 10mA)
+        iinlim_msg = f"{iinlim_current_limit}mA input current limit"
+
+    ####################
+
+    if reg_addr == 0x05:  # Conditional for register at 0x05
+        # The VINDPM value is determined by the 8-bit value multiplied by the step size (100mV)
+        vindpm_value = data & 0xFF  # Extract the 8-bit value
+        vindpm_voltage_limit = 3600 + (vindpm_value * 100)  # Calculate the voltage limit (base is 3600mV)
+        vindpm_msg = f"{vindpm_voltage_limit}mV input voltage limit"
+        
+        # Combine messages
+        return f"VINDPM: {vindpm_msg}"
+
+    ####################
+
+    if reg_addr == 0x03:  # Conditional for register at 0x03
+        # The ICHG current limit value is determined by the 8-bit value multiplied by the step size (10mA)
+        ichg_value = data & 0xFF  # Extract the 8-bit value
+        ichg_current_limit = ichg_value * 10  # Calculate the current limit (step size is 10mA)
+        ichg_msg = f"{ichg_current_limit}mA charge current limit"
+        
+        # Combine messages
+        return f"ICHG: {ichg_msg}"
+
+    ####################
+
+    if reg_addr == 0x01:  # Conditional for register at 0x01
+        # The VREG value is determined by the 11-bit value multiplied by the step size (10mV)
+        vreg_value = data & 0x7FF  # Extract the 11-bit value
+        vreg_voltage_limit = vreg_value * 10  # Calculate the voltage limit (step size is 10mV)
+        vreg_msg = f"{vreg_voltage_limit}mV charge voltage limit"
+        
+        # Combine messages
+        return f"VREG: {vreg_msg}"
+
+    ####################
+
+    if reg_addr == 0x00:  # Conditional for register at 0x00
+        # The VYSMIN value is determined by the 6-bit value multiplied by the step size (250mV)
+        vysmin_value = data & 0x3F  # Extract the 6-bit value
+        vysmin_voltage = 2500 + (vysmin_value * 250)  # Calculate the voltage (base is 2500mV)
+        vysmin_msg = f"{vysmin_voltage}mV minimal system voltage"
+        
+        # Combine messages
+        return f"VYSMIN: {vysmin_msg}"
+
+    ###################
     return f"{data:02x}"  # Return data as a hexadecimal string
 
 def display_data(screen):
