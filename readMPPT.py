@@ -84,6 +84,185 @@ def read_register_data(reg_addr, length):
 def interpret_register_data(reg_addr, data):
     # Messages for each bit depending on its state (0 or 1)
 
+    
+    ###################
+    if reg_addr == 0x29:
+        bit_messages = {
+            7: {0: "Charging status change does produce INT", 1: "Charging status change does NOT produce INT"},
+            6: {0: "ICO status change does produce INT", 1: "ICO status change does NOT produce INT"},
+            # No need to include RESERVED bits 5 and 3 as they do not have a status change.
+            4: {0: "VBUS status change does produce INT", 1: "VBUS status change does NOT produce INT"},
+            2: {0: "Entering TREG does produce INT", 1: "Entering TREG does NOT produce INT"},
+            1: {0: "VBAT present status change does produce INT", 1: "VBAT present status change does NOT produce INT"},
+            0: {0: "BC1.2 status change does produce INT", 1: "BC1.2 status change does NOT produce INT"},
+        }
+    
+        messages = []
+        for bit_position, values in bit_messages.items():
+            bit_value = (data >> bit_position) & 1
+            messages.append(values[bit_value])
+    
+        return ', '.join(messages)
+    ###################
+    if reg_addr == 0x28:
+        bit_messages = {
+            7: {0: "IINPDM / IOTG does produce INT pulse", 1: "IINPDM / IOTG does NOT produce INT pulse"},
+            6: {0: "VINPDM / VOTG does produce INT pulse", 1: "VINPDM / VOTG does NOT produce INT pulse"},
+            5: {0: "I2C watchdog timer expired does produce INT pulse", 1: "I2C watchdog timer expired does NOT produce INT pulse"},
+            4: {0: "Poor source detected does produce INT pulse", 1: "Poor source detected does NOT produce INT pulse"},
+            3: {0: "PG toggle does produce INT", 1: "PG toggle does NOT produce INT"},
+            2: {0: "VAC2 present status change does produce INT", 1: "VAC2 present status change does NOT produce INT"},
+            1: {0: "VAC1 present status change does produce INT", 1: "VAC1 present status change does NOT produce INT"},
+            0: {0: "VBUS present status change does produce INT", 1: "VBUS present status change does NOT produce INT"},
+        }
+        
+        messages = []
+        for bit_position, values in bit_messages.items():
+            bit_value = (data >> bit_position) & 1
+            messages.append(values[bit_value])
+        
+        return ', '.join(messages)
+    ###################
+    if reg_addr == 0x27:
+        bit_messages = {
+        7: {0: "System short circuit: Normal", 1: "System short circuit: Detected"},
+        6: {0: "VSYS over-voltage: Normal", 1: "VSYS over-voltage: Detected"},
+        5: {0: "OTG over-voltage: Normal", 1: "OTG over-voltage: Detected"},
+        4: {0: "OTG under-voltage: Normal", 1: "OTG under-voltage: Detected"},
+        3: {0: "Reserved", 1: "Reserved"},
+        2: {0: "Thermal shutdown: Normal", 1: "Thermal shutdown: Detected"},
+        # Bits 1-0 are reserved.
+        }
+    
+        messages = []
+        for bit_position, values in bit_messages.items():
+            # Skip reserved bits.
+            if 'Reserved' in values[0]: continue
+            
+            bit_value = (data >> bit_position) & 1
+            messages.append(values[bit_value])
+    
+        return ', '.join(messages)
+    ###################
+    if reg_addr == 0x26:
+        bit_messages = {
+        0: {0: "VAC1 over-voltage normal", 1: "VAC1 over-voltage detected"},
+        1: {0: "VAC2 over-voltage normal", 1: "VAC2 over-voltage detected"},
+        2: {0: "Converter over-current normal", 1: "Converter over-current detected"},
+        3: {0: "IBAT over-current normal", 1: "IBAT over-current detected"},
+        4: {0: "IBUS over-current normal", 1: "IBUS over-current detected"},
+        5: {0: "VBAT over-voltage normal", 1: "VBAT over-voltage detected"},
+        6: {0: "VBUS over-voltage normal", 1: "VBUS over-voltage detected"},
+        7: {0: "IBAT regulation normal", 1: "IBAT regulation detected"}
+        }
+
+        messages = []
+        for bit_position, values in bit_messages.items():
+            bit_value = (data >> bit_position) & 1
+            messages.append(values[bit_value])
+
+        return ', '.join(messages)
+    
+    ###################
+    if reg_addr == 0x25:  # Conditional for register at 0x25
+        bit_messages = {
+            0: {0: "Normal TS hot temperature", 1: "TS hot temperature (T5) detected"},
+            1: {0: "Normal TS warm temperature", 1: "TS warm temperature (T3) detected"},
+            2: {0: "Normal TS cool temperature", 1: "TS cool temperature (T2) detected"},
+            3: {0: "Normal TS cold temperature", 1: "TS cold temperature (T1) detected"},
+            4: {0: "VBAT above OTG threshold", 1: "VBAT below OTG threshold to enable OTG mode"},
+            # Bits 5 to 7 are reserved and typically would not need a message.
+        }
+        
+        messages = []
+
+        for bit_pos, bit_values in bit_messages.items():
+            bit_state = (data >> bit_pos) & 1
+            messages.append(bit_values[bit_state])
+
+        return ', '.join(messages)
+    
+    ###################
+    if reg_addr == 0x24:  # Conditional for register at 0x24
+        bit_messages = {
+            0: {0: "Top off timer flag not expired", 1: "Top off timer flag expired"},
+            # Bits 1 to 6 have similar structures for their messages.
+            1: {0: "Pre-charge timer not expired", 1: "Pre-charge timer expired"},
+            2: {0: "Trickle charge timer not expired", 1: "Trickle charge timer expired"},
+            3: {0: "Fast charge timer not expired", 1: "Fast charge timer expired"},
+            4: {0: "VSYSMIN regulation not entered or exited", 1: "VSYSMIN regulation entered or exited"},
+            5: {0: "ADC conversion not completed", 1: "ADC conversion completed"},
+            6: {0: "D+/D- detection not completed", 1: "D+/D- detection completed"},
+            # Bit 7 is reserved, typically no message is required.
+        }
+        
+        messages = []
+
+        for bit_pos, bit_values in bit_messages.items():
+            bit_state = (data >> bit_pos) & 1
+            messages.append(bit_values[bit_state])
+
+        return ', '.join(messages)
+    
+    ###################
+    if reg_addr == 0x23:  # Conditional for register at 0x23
+        # Dictionary to hold the status messages for each bit
+        bit_messages = {
+            0: {0: "BC1.2 detection status unchanged", 1: "BC1.2 detection status changed"},
+            1: {0: "VBAT present status unchanged", 1: "VBAT present status changed"},
+            2: {0: "Thermal regulation status unchanged", 1: "TREG signal rising threshold detected"},
+            # Skipping reserved bits as they don't have status messages
+            4: {0: "VBUS status unchanged", 1: "VBUS status changed"},
+            # Skipping reserved bits as they don't have status messages
+            6: {0: "ICO status unchanged", 1: "ICO status changed"},
+            7: {0: "Charge status unchanged", 1: "Charge status changed"}
+        }
+        
+        # Initialize an empty list to store messages for the current register data
+        messages = []
+
+        # Define which bits are reserved and should be skipped
+        reserved_bits = [3, 5]
+
+        # Iterate through each bit position from 0 to 7
+        for bit_pos in range(8):
+            if bit_pos not in reserved_bits:
+                # Extract the bit state at position bit_pos
+                bit_state = (data >> bit_pos) & 1
+                # Append the corresponding message for the bit's state to the messages list
+                messages.append(bit_messages[bit_pos][bit_state])
+
+        # Combine messages
+        return ', '.join(messages)
+        
+    ###################
+    if reg_addr == 0x22:  # Conditional for register at 0x22
+        # Dictionary to hold the status messages for each bit
+        bit_messages = {
+            0: {0: "VBUS present status unchanged", 1: "VBUS present status changed"},
+            1: {0: "VAC1 present status unchanged", 1: "VAC1 present status changed"},
+            2: {0: "VAC2 present status unchanged", 1: "VAC2 present status changed"},
+            3: {0: "Power good", 1: "Power bad"},
+            4: {0: "Poor source status unchanged", 1: "Poor source status changed"},
+            5: {0: "Watchdog timer signal unchanged", 1: "Watchdog timer signal rising edge detected"},
+            6: {0: "VINDPM/VOTG flag status unchanged", 1: "VINDPM/VOTG flag status changed"},
+            7: {0: "IINDPM/IOTG flag status unchanged", 1: "IINDPM/IOTG flag status changed"}
+        }
+        
+        # Initialize an empty list to store messages for the current register data
+        messages = []
+
+        # Iterate through each bit position from 0 to 7
+        for bit_pos in range(8):
+            # Extract the bit state at position bit_pos
+            bit_state = (data >> bit_pos) & 1
+            # Append the corresponding message for the bit's state to the messages list
+            messages.append(bit_messages[bit_pos][bit_state])
+
+        # Combine messages
+        return ', '.join(messages)
+    
+    ###################
     if reg_addr == 0x21:  # Conditional for register at 0x21
         # Dictionary to hold the status messages for each bit
         bit_messages = {
