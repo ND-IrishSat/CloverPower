@@ -168,6 +168,158 @@ def interpret_register_data(reg_addr, data):
         return f"TS_COOL: {ts_cool_msg}, TS_WARM: {ts_warm_msg}, BHOT: {bhot_msg}, BCOLD: {bcold_msg}, TS_IGNORE: {ts_ignore_msg}"
 
     ###################
+
+    if reg_addr == 0x17:  # Conditional for register at 0x17
+        # Decode JEITA_VSET (bits 7-5)
+        jeita_vset = (data >> 5) & 0x07
+        if jeita_vset == 0:
+            jeita_vset_msg = "Charge Suspend"
+        elif jeita_vset == 1:
+            jeita_vset_msg = "VREG to VREG-800mV"
+        elif jeita_vset == 2:
+            jeita_vset_msg = "VREG to VREG-600mV"
+        elif jeita_vset == 3:
+            jeita_vset_msg = "VREG to VREG-400mV (default)"
+        elif jeita_vset == 4:
+            jeita_vset_msg = "VREG to VREG-300mV"
+        elif jeita_vset == 5:
+            jeita_vset_msg = "VREG to VREG-200mV"
+        elif jeita_vset == 6:
+            jeita_vset_msg = "VREG to VREG-100mV"
+        else:  # jeita_vset == 7
+            jeita_vset_msg = "VREG unchanged"
+        
+        # Decode JEITA_ISETH (bits 4-3)
+        jeita_iseth = (data >> 3) & 0x03
+        if jeita_iseth == 0:
+            jeita_iseth_msg = "Charge Suspend"
+        elif jeita_iseth == 1:
+            jeita_iseth_msg = "ICHG to 20% ICHG"
+        elif jeita_iseth == 2:
+            jeita_iseth_msg = "ICHG to 40% ICHG"
+        else:  # jeita_iseth == 3
+            jeita_iseth_msg = "ICHG unchanged (default)"
+        
+        # Decode JEITA_ISETC (bits 2-1)
+        jeita_isetc = (data >> 1) & 0x03
+        if jeita_isetc == 0:
+            jeita_isetc_msg = "Charge Suspend"
+        elif jeita_isetc == 1:
+            jeita_isetc_msg = "ICHG to 20% ICHG (default)"
+        elif jeita_isetc == 2:
+            jeita_isetc_msg = "ICHG to 40% ICHG"
+        else:  # jeita_isetc == 3
+            jeita_isetc_msg = "ICHG unchanged"
+        
+        # Bit 0 is reserved; no need to decode
+        
+        # Combine messages
+        return f"JEITA_VSET: {jeita_vset_msg}, JEITA_ISETH: {jeita_iseth_msg}, JEITA_ISETC: {jeita_isetc_msg}"
+
+    ###################
+
+    if reg_addr == 0x16:  # Conditional for register at 0x16
+        # Decode TREG (bits 7-6)
+        treg = (data >> 6) & 0x03
+        treg_msg = {
+            0: "60°C",
+            1: "80°C",
+            2: "100°C",
+            3: "120°C (default)"
+        }.get(treg, "Unknown TREG setting")
+        
+        # Decode TSHUT (bits 5-4)
+        tshut = (data >> 4) & 0x03
+        tshut_msg = {
+            0: "150°C",
+            1: "130°C",
+            2: "120°C",
+            3: "85°C (default)"
+        }.get(tshut, "Unknown TSHUT setting")
+        
+        # Decode pull-down enable bits (bit 3 for VBUS, bit 2 for VAC1, bit 1 for VAC2)
+        vbus_pd_en = "Enabled" if (data >> 3) & 0x01 else "Disabled"
+        vac1_pd_en = "Enabled" if (data >> 2) & 0x01 else "Disabled"
+        vac2_pd_en = "Enabled" if (data >> 1) & 0x01 else "Disabled"
+        
+        # Bit 0 is reserved; no need to decode
+        
+        # Combine messages
+        return f"TREG: {treg_msg}, TSHUT: {tshut_msg}, VBUS_PD_EN: {vbus_pd_en}, VAC1_PD_EN: {vac1_pd_en}, VAC2_PD_EN: {vac2_pd_en}"
+
+    ###################
+
+    if reg_addr == 0x15:  # Conditional for register at 0x15
+        # Decode VOC_PCT (bits 7-5)
+        voc_pct = (data >> 5) & 0x07
+        voc_pct_msg = {
+            0: "50.625%",
+            1: "62.5%",
+            2: "68.75%",
+            3: "75%",
+            4: "81.25%",
+            5: "87.5% (default)",
+            6: "93.75%",
+            7: "1"
+        }.get(voc_pct, "Unknown VOC_PCT setting")
+        
+        # Decode VOC_DLY (bits 4-3)
+        voc_dly = (data >> 3) & 0x03
+        voc_dly_msg = {
+            0: "50ms",
+            1: "300ms (default)",
+            2: "2s",
+            3: "5s"
+        }.get(voc_dly, "Unknown VOC_DLY setting")
+        
+        # Decode VOC_RATE (bits 2-1)
+        voc_rate = (data >> 1) & 0x03
+        voc_rate_msg = {
+            0: "30s",
+            1: "2mins (default)",
+            2: "10mins",
+            3: "30mins"
+        }.get(voc_rate, "Unknown VOC_RATE setting")
+        
+        # Decode EN_MPPT (bit 0)
+        en_mppt_msg = "Enabled" if data & 0x01 else "Disabled (default)"
+        
+        # Combine messages
+        return f"VOC_PCT: {voc_pct_msg}, VOC_DLY: {voc_dly_msg}, VOC_RATE: {voc_rate_msg}, EN_MPPT: {en_mppt_msg}"
+
+    ####################
+
+    if reg_addr == 0x14:  # Conditional for register at 0x14
+        # Interpret the SFET_PRESENT bit (bit 7)
+        sfet_present_msg = "Ship FET Populated" if (data >> 7) & 0x01 else "No Ship FET"
+        
+        # Interpret the EN_IBAT bit (bit 5)
+        en_ibat_msg = "IBAT discharge sensing enabled" if (data >> 5) & 0x01 else "IBAT discharge sensing disabled"
+        
+        # Interpret the IBAT_REG bits (bits 4-3)
+        ibat_reg = (data >> 3) & 0x03
+        ibat_reg_msg = {
+            0: "3A",
+            1: "4A",
+            2: "5A",
+            3: "Disabled (default)"
+        }.get(ibat_reg, "Unknown IBAT_REG setting")
+        
+        # Interpret the EN_INDPNM bit (bit 2)
+        en_indpnm_msg = "Internal INDPNM resistor current limit enabled" if (data >> 2) & 0x01 else "Disabled"
+        
+        # Interpret the EN_EXTILIM bit (bit 1)
+        en_extilim_msg = "External ILIM high input current enabled" if (data >> 1) & 0x01 else "Disabled (default)"
+        
+        # Interpret the EN_BATOC bit (bit 0)
+        en_batoc_msg = "Battery discharging current OCP enabled" if data & 0x01 else "Disabled (default)"
+        
+        # Combine messages
+        return f"SFET_PRESENT: {sfet_present_msg}, EN_IBAT: {en_ibat_msg}, IBAT_REG: {ibat_reg_msg}, EN_INDPNM: {en_indpnm_msg}, EN_EXTILIM: {en_extilim_msg}, EN_BATOC: {en_batoc_msg}"
+
+    ###################
+
+    
     return f"{data:02x}"  # Return data as a hexadecimal string
 
 def display_data(screen):
