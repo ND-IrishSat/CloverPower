@@ -1,4 +1,3 @@
-
 import curses
 import smbus
 
@@ -82,9 +81,98 @@ def read_register_data(reg_addr, length):
         print(f"Error reading register {reg_addr}: {e}")
         return None
 
+def interpret_register_data(reg_addr, data):
+    # Messages for each bit depending on its state (0 or 1)
+
+    ###################
+    if reg_addr == 0x20:
+        bit_messages = {
+            0: {0: "Nominal", 1: "VAC1 Over-voltage"},
+            1: {0: "Nominal", 1: "VAC2 Over-voltage"},
+            2: {0: "Nominal", 1: "Converter Over-current Protection Active"},
+            3: {0: "Nominal", 1: "BAT Over-current Protection Active"},
+            4: {0: "Nominal", 1: "BUS Over-current Protection Active"},
+            5: {0: "Nominal", 1: "BAT Over-voltage Protection Active"},
+            6: {0: "Nominal", 1: "BUS Over-voltage Protection Active"},
+            7: {0: "Nominal", 1: "Device in Battery Discharging Current Regulation"},
+        }
+    
+        # Initialize an empty list to store messages for the current register data
+        messages = []
+    
+        # Iterate through each bit position from 0 to 7
+        for bit_pos in range(8):
+            # Determine the state of the bit at bit_pos (0 or 1)
+            bit_state = (data >> bit_pos) & 1
+            # Append the corresponding message for the bit's state to the messages list
+            if bit_pos in bit_messages:
+                messages.append(bit_messages[bit_pos][bit_state])
+    
+        # Join all messages with a newline character and return the result
+        return "\n".join(messages)
+
+    ###################
+    if reg_addr == 0x19:  # Assuming 0x19 is the address of the ICO_Current_Limit Register
+        # Combine the two bytes into one 16-bit value (assuming the data is big-endian)
+        combined_data = (data[0] << 8) | data[1]
+        # Extract the ICO_ILIM field (assuming it's bits 0-7)
+        ico_ilim = combined_data & 0xFF  # Masking with 0xFF to get the lowest 8 bits
+        # Convert the binary value to an actual current limit
+        current_limit_mA = ico_ilim * 10  # Each step is 10mA
+        return f"ICO Current Limit: {current_limit_mA} mA"
+
+    ###################
+    if reg_addr == 0x18:  # Conditional for register at 0x18
+        # Interpret the TS_COOL field (bits 7-6)
+        ts_cool = (data >> 6) & 0x03
+        if ts_cool == 0:
+            ts_cool_msg = "71.1% (5°C)"
+        elif ts_cool == 1:
+            ts_cool_msg = "68.4% (10°C) - default"
+        elif ts_cool == 2:
+            ts_cool_msg = "65.5% (15°C)"
+        else:  # ts_cool == 3
+            ts_cool_msg = "62.4% (20°C)"
+        
+        # Interpret the TS_WARM field (bits 5-4)
+        ts_warm = (data >> 4) & 0x03
+        if ts_warm == 0:
+            ts_warm_msg = "48.4% (40°C)"
+        elif ts_warm == 1:
+            ts_warm_msg = "44.8% (45°C) - default"
+        elif ts_warm == 2:
+            ts_warm_msg = "41.2% (50°C)"
+        else:  # ts_warm == 3
+            ts_warm_msg = "37.7% (55°C)"
+        
+        # Interpret the BHOT field (bits 3-2)
+        bhot = (data >> 2) & 0x03
+        if bhot == 0:
+            bhot_msg = "55°C"
+        elif bhot == 1:
+            bhot_msg = "60°C - default"
+        elif bhot == 2:
+            bhot_msg = "65°C"
+        else:  # bhot == 3
+            bhot_msg = "Disable"
+        
+        # Interpret the BCOLD bit (bit 1)
+        bcold = (data >> 1) & 0x01
+        bcold_msg = "NOT ignore" if bcold == 0 else "Ignore"
+        
+        # Interpret the TS_IGNORE bit (bit 0)
+        ts_ignore = data & 0x01
+        ts_ignore_msg = "NOT ignore" if ts_ignore == 0 else "Ignore"
+        
+        # Combine messages
+        return f"TS_COOL: {ts_cool_msg}, TS_WARM: {ts_warm_msg}, BHOT: {bhot_msg}, BCOLD: {bcold_msg}, TS_IGNORE: {ts_ignore_msg}"
+
+    ###################
+    return f"{data:02x}"  # Return data as a hexadecimal string
+
 def display_data(screen):
-    curses.curs_set(0)  # Hide cursor
-    screen.nodelay(True)  # Make getch() non-blocking
+    curses.curs_set(0)
+    screen.nodelay(True)
 
     while True:
         screen.clear()
@@ -93,17 +181,16 @@ def display_data(screen):
             data = read_register_data(reg_addr, length)
             if data is not None:
                 if isinstance(data, list):
-                    data_str = ' '.join([f"{byte:02x}" for byte in data])
+                    # Interpret each byte of data if multiple bytes were read
+                    data_str = ' '.join([interpret_register_data(reg_addr, byte) for byte in data])
                 else:
-                    data_str = f"{data:02x}"
+                    # Interpret the data if a single byte was read
+                    data_str = interpret_register_data(reg_addr, data)
                 screen.addstr(f"{reg_name} ({reg_addr:02x}): {data_str}\n")
-        
+
         screen.refresh()
         key = screen.getch()
         if key == ord('q'):
-            break  # Exit loop
+            break
 
-        curses.napms(500)  # Refresh every 500 milliseconds
-
-# Initialize curses application
-curses.wrapper(display_data)
+        curses.napms(250)
