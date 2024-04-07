@@ -67,19 +67,19 @@ registers = {
     0x48: ("REG48_Part_Information", 1),
 }
 
+
 def read_register_data(reg_addr, length):
-    """Read bytes from a single I2C register."""
-    try:
-        if length == 1:
-            # Read a single byte
-            data = bus.read_byte_data(device_address, reg_addr)
-        else:
-            # Read multiple bytes
-            data = bus.read_i2c_block_data(device_address, reg_addr, length)
-        return data
-    except Exception as e:
-        print(f"Error reading register {reg_addr}: {e}")
-        return None
+    """
+    Mock function to simulate reading bytes from a single I2C register.
+    Generates random data for testing without actual device.
+    """
+    # Generate random data based on the length of the register
+    if length == 1:
+        # Return a single byte value
+        return random.randint(0, 255)
+    else:
+        # Return a list of byte values
+        return [random.randint(0, 255) for _ in range(length)]
 
 def interpret_register_data(reg_addr, data):
     # Messages for each bit depending on its state (0 or 1)
