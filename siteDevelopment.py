@@ -1,5 +1,6 @@
 import streamlit as st
 import random
+import matplotlib.pyplot as plt
 
 # Initialize I2C bus
 
@@ -147,22 +148,24 @@ def interpret_register_data(reg_addr, data):
 
     ###################
     if reg_addr == 0x31:  # IBUS_ADC register
-        # Assume data is a tuple of two bytes (high_byte, low_byte)
-        high_byte, low_byte = data
+        # Assuming data is a single 16-bit integer where:
+        # high_byte is the most significant 8 bits and low_byte is the least significant 8 bits
+        high_byte = (data >> 8) & 0xFF  # Extract the high byte by shifting right 8 bits and then masking with 0xFF
+        low_byte = data & 0xFF  # Extract the low byte by masking with 0xFF
+        
         # Combine the two 8-bit values to form a single 16-bit value
         raw_value = (high_byte << 8) | low_byte
-
+        
         # Interpret the 16-bit raw value as a signed integer (2's complement)
         if raw_value & 0x8000:  # if the sign bit is set
             adc_value = raw_value - 0x10000
         else:
             adc_value = raw_value
-
+        
         # Convert the ADC value to current (in mA) as the step size is 1mA
         current = adc_value  # The step size is 1mA
-
-        return f"IBUS ADC Current: {current} mA"
     
+        return f"IBUS ADC Current: {current} mA"    
     ###################
     if reg_addr == 0x30:
         adc_channels = {
@@ -179,15 +182,15 @@ def interpret_register_data(reg_addr, data):
     
     ###################
     if reg_addr == 0x2F:
-        def interpret_reg2f(data):
+        
         adc_controls = {
-            "IBUS_ADC": (data >> 7) & 0x01,
-            "IBAT_ADC": (data >> 6) & 0x01,
-            "VBUS_ADC": (data >> 5) & 0x01,
-            "VBAT_ADC": (data >> 4) & 0x01,
-            "VSYS_ADC": (data >> 3) & 0x01,
-            "TS_ADC": (data >> 2) & 0x01,
-            "TDIE_ADC": (data >> 1) & 0x01
+        "IBUS_ADC": (data >> 7) & 0x01,
+        "IBAT_ADC": (data >> 6) & 0x01,
+        "VBUS_ADC": (data >> 5) & 0x01,
+        "VBAT_ADC": (data >> 4) & 0x01,
+        "VSYS_ADC": (data >> 3) & 0x01,
+        "TS_ADC": (data >> 2) & 0x01,
+        "TDIE_ADC": (data >> 1) & 0x01
         }
     
         status = {name: "Disabled" if state else "Enabled" for name, state in adc_controls.items()}
@@ -237,7 +240,7 @@ def interpret_register_data(reg_addr, data):
 
     ###################
     if reg_addr == 0x2C:
-         masks = {
+        masks = {
             7: "IBAT regulation INT",
             6: "VBUS over-voltage INT",
             5: "VBAT over-voltage INT",
@@ -249,6 +252,7 @@ def interpret_register_data(reg_addr, data):
         }
     
         status = []
+    
         for bit_position, description in masks.items():
             mask_value = (data >> bit_position) & 0x01
             status.append(f"{description}: {'masked' if mask_value else 'unmasked'}")
@@ -273,25 +277,39 @@ def interpret_register_data(reg_addr, data):
         
         return status
     ###################
+
     if reg_addr == 0x2A:
         masks = {
-        "DPDM_DONE_MASK": "D+/D- detection done INT",
-        "ADC_DONE_MASK": "ADC conversion done INT",
-        "VSYSP_MASK": "VSYSP min regulation INT",
-        "CHG_TMR_MASK": "Fast charge timer INT",
-        "TRICHG_TMR_MASK": "Trickle charge timer INT",
-        "PRECHG_TMR_MASK": "Pre-charge timer INT",
-        "TOPOFF_TMR_MASK": "Top off timer INT"
+            "DPDM_DONE_MASK": "D+/D- detection done INT",
+            "ADC_DONE_MASK": "ADC conversion done INT",
+            "VSYSP_MASK": "VSYSP min regulation INT",
+            "CHG_TMR_MASK": "Fast charge timer INT",
+            "TRICHG_TMR_MASK": "Trickle charge timer INT",
+            "PRECHG_TMR_MASK": "Pre-charge timer INT",
+            "TOPOFF_TMR_MASK": "Top off timer INT"
+        }
+        
+        # Assuming you want to map each mask to a specific bit, assign bit positions explicitly
+        bit_positions = {
+            "DPDM_DONE_MASK": 0,  # Bit 0
+            "ADC_DONE_MASK": 1,   # Bit 1
+            "VSYSP_MASK": 2,      # Bit 2
+            "CHG_TMR_MASK": 3,    # Bit 3
+            "TRICHG_TMR_MASK": 4, # Bit 4
+            "PRECHG_TMR_MASK": 5, # Bit 5
+            "TOPOFF_TMR_MASK": 6  # Bit 6
+            # Bit 7 is reserved
         }
 
         status = []
         for bit, name in masks.items():
-            mask_value = (data >> masks.keys().index(bit)) & 0x01
+            bit_position = bit_positions[bit]
+            mask_value = (data >> bit_position) & 0x01
             status.append(f"{name}: {'masked' if mask_value else 'unmasked'}")
-    
+        
         # Reserved bit (bit 7) handling is not required as it is reserved and should not affect functionality.
         return status
-        
+
     ###################
     if reg_addr == 0x29:
         bit_messages = {
@@ -1228,10 +1246,40 @@ def display_data(reg_info,reg_addr):
     st.text(f"Description: {description}")
     st.write("---")  # Add a separator
 
+def plot_value(value, label, color, max_value):
+    # Calculate the percentage of the value out of its maximum
+
+    percentage = (value / max_value) * 100
+    fig, ax = plt.subplots(figsize=(8, 1))  # Smaller height as it's a single bar
+    ax.barh(label, percentage, color=color)
+    ax.set_xlim(0, 100)  # Since we're now working with percentages, the limit is always 100
+    ax.get_yaxis().set_visible(False)  # Hide y-axis labels
+    ax.set_xticks([0, 25, 50, 75, 100])
+    ax.set_xticklabels(['0%', '25%', '50%', '75%', '100%'])
+    ax.set_title(label, pad=10)
+    return fig
+
 def main():
-    st.set_page_config(layout="wide")
+    st.set_page_config(layout="wide",page_title = "IrishSat - Power Readout",page_icon = "NDIS-Icon-gold.png",menu_items=None)
     st.title("I2C Register Data Viewer")
-    col1, col2, col3, col4 = st.columns((2,1,1,1))
+    ## power bars
+
+    value1 = 45  
+    value2 = 35  
+    value3 = 20
+    
+
+    # Set up the figure and axis for the plot
+    fig1 = plot_value(value1, 'System Power', 'yellow',24)
+    st.pyplot(fig1)
+
+    fig2 = plot_value(value2, 'Battery Power', 'orange',20)
+    st.pyplot(fig2)
+
+    fig3 = plot_value(value3, 'VBUS Power', 'red',30)
+    st.pyplot(fig3)
+
+    #col1, col2, col3, col4 = st.columns((1,1,1,1))
 
     # Create a button in Streamlit to refresh the data
     if st.button("Refresh Data"):
@@ -1239,18 +1287,19 @@ def main():
 
         # Display data in a Streamlit table
         for reg_addr, reg_info in registers.items():
-            if reg_addr >= 0x00 and reg_addr <= 0x08:
-                with col1:
-                    display_data(reg_info,reg_addr)
-            elif reg_addr > 0x08 and reg_addr <= 0x0F:
-                with col2:
-                    display_data(reg_info,reg_addr)
-            elif reg_addr > 0x0F and reg_addr <= 0x18:
-                with col3:
-                    display_data(reg_info,reg_addr) 
-            else:
-                with col4:
-                    display_data(reg_info,reg_addr)
+        #     if reg_addr >= 0 and reg_addr <= registers(14):
+        #         with col1:
+        #             display_data(reg_info,reg_addr)
+        #     elif reg_addr > 14 and reg_addr <= 28:
+        #         with col2:
+        #             display_data(reg_info,reg_addr)
+        #     elif reg_addr > 28 and reg_addr <= 42:
+        #         with col3:
+        #             display_data(reg_info,reg_addr) 
+        #     else:
+        #         with col4:
+        #             display_data(reg_info,reg_addr)
+            
             reg_name, length = reg_info
             data = read_register_data(reg_addr, length)
             
