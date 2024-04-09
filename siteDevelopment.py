@@ -89,12 +89,16 @@ def interpret_register_data(reg_addr, data):
             combined_data = (combined_data << 8) | byte
         data = combined_data
 
+    ####################
+    if reg_addr == 0x37:
+        # Interpret the binary data as an integer in millivolts
+        voltage_mV = data  # Direct conversion to mV since 1 LSB = 1 mV
+        return f"VAC1 ADC Voltage: {voltage_mV} mV"
+        
     ###################
     if reg_addr == 0x35:
         if data & 0x8000:
-                adc_value = data - 0x10000
-            else:
-                adc_value = data
+            adc_value = data
             return f"IBUS ADC Current: {adc_value} mA"
 
     ###################
