@@ -1,8 +1,10 @@
+import smbus
 import streamlit as st
 import random
+import matplotlib.pyplot as plt
 
 # Initialize I2C bus
-
+bus = smbus.SMBus(1)
 device_address = 0x6B  # Example device address; replace with your actual device address
 
 # Define registers and their byte lengths
@@ -67,6 +69,7 @@ registers = {
     0x48: ("REG48_Part_Information", 1),
 }
 
+
 def read_register_data(reg_addr, length):
     """Read bytes from a single I2C register."""
     try:
@@ -81,6 +84,7 @@ def read_register_data(reg_addr, length):
         print(f"Error reading register {reg_addr}: {e}")
         return None
 
+
 def interpret_register_data(reg_addr, data):
     # Messages for each bit depending on its state (0 or 1)
     if isinstance(data, list):
@@ -88,6 +92,408 @@ def interpret_register_data(reg_addr, data):
         for byte in data:
             combined_data = (combined_data << 8) | byte
         data = combined_data
+
+    ###################
+    if reg_addr == 0x41:  # TDIE_ADC register
+        # Interpret the 16-bit raw value as a signed integer (2's complement)
+        if data & 0x8000:  # Check if the sign bit is set
+            adc_value = data - 0x10000
+        else:
+            adc_value = data
+        # Convert ADC value to temperature using the step size of 0.5°C
+        temperature_C = adc_value * 0.5
+        return f"TDIE Temperature: {temperature_C}°C"
+        
+    ###################
+    if reg_addr == 0x3F:  # TS_ADC register
+        # Multiply the data by the bit step size to get the percentage
+        ts_percentage = data * 0.009766
+        return f"TS ADC Reading: {ts_percentage:.2f}%"
+        
+    ###################
+    if reg_addr == 0x3D:  # VSYS_ADC register
+        # The value is in mV (each bit represents 1 mV)
+        voltage_mV = data
+        return f"VSYS ADC Voltage: {voltage_mV} mV"
+        
+    ###################
+    if reg_addr == 0x3B:  # VBAT_ADC register
+        # Directly interpret the integer value as the voltage in millivolts
+        voltage_mV = data
+        return f"VBAT ADC Voltage: {voltage_mV} mV"
+        
+    ###################
+    if reg_addr == 0x39:  # VAC2_ADC register
+        # The value is in mV (each bit represents 1 mV)
+        voltage_mV = data
+        return f"VAC2 ADC Voltage: {voltage_mV} mV"
+        
+    ####################
+    if reg_addr == 0x37:
+        # Interpret the binary data as an integer in millivolts
+        voltage_mV = data  # Direct conversion to mV since 1 LSB = 1 mV
+        return f"VAC1 ADC Voltage: {voltage_mV} mV"
+        
+    ###################
+    if reg_addr == 0x35:
+        if data & 0x8000:
+            adc_value = data
+            return f"IBUS ADC Current: {adc_value} mA"
+
+    ###################
+    if reg_addr == 0x33:  # IBAT_ADC register
+        # Interpret the 16-bit raw value as a signed integer (2's complement)
+        if data & 0x8000:  # Check for a negative value
+            adc_value = data - 0x10000
+        else:
+            adc_value = data
+        return f"IBAT ADC Current: {adc_value} mA"
+
+    ###################
+    if reg_addr == 0x31:  # IBUS_ADC register
+        # Assuming data is a single 16-bit integer where:
+        # high_byte is the most significant 8 bits and low_byte is the least significant 8 bits
+        high_byte = (data >> 8) & 0xFF  # Extract the high byte by shifting right 8 bits and then masking with 0xFF
+        low_byte = data & 0xFF  # Extract the low byte by masking with 0xFF
+        
+        # Combine the two 8-bit values to form a single 16-bit value
+        raw_value = (high_byte << 8) | low_byte
+        
+        # Interpret the 16-bit raw value as a signed integer (2's complement)
+        if raw_value & 0x8000:  # if the sign bit is set
+            adc_value = raw_value - 0x10000
+        else:
+            adc_value = raw_value
+        
+        # Convert the ADC value to current (in mA) as the step size is 1mA
+        current = adc_value  # The step size is 1mA
+    
+        return f"IBUS ADC Current: {current} mA"    
+    ###################
+    if reg_addr == 0x30:
+        adc_channels = {
+        "D+ ADC": (data >> 7) & 0x01,
+        "D- ADC": (data >> 6) & 0x01,
+        "VAC2 ADC": (data >> 5) & 0x01,
+        "VAC1 ADC": (data >> 4) & 0x01
+        }
+    
+        status = {channel: "Disabled" if state else "Enabled" for channel, state in adc_channels.items()}
+        # Reserved bits (3-0) are not used for any functionality.
+    
+        return status
+    
+    ###################
+    if reg_addr == 0x2F:
+        
+        adc_controls = {
+        "IBUS_ADC": (data >> 7) & 0x01,
+        "IBAT_ADC": (data >> 6) & 0x01,
+        "VBUS_ADC": (data >> 5) & 0x01,
+        "VBAT_ADC": (data >> 4) & 0x01,
+        "VSYS_ADC": (data >> 3) & 0x01,
+        "TS_ADC": (data >> 2) & 0x01,
+        "TDIE_ADC": (data >> 1) & 0x01
+        }
+    
+        status = {name: "Disabled" if state else "Enabled" for name, state in adc_controls.items()}
+        # Bit 0 is reserved and thus not included in the interpretation.
+    
+        return status
+        
+    ###################
+    if reg_addr == 0x2E:
+        adc_control = "Enabled" if data & 0x80 else "Disabled"
+        adc_rate = "Continuous conversion" if data & 0x40 else "One-shot conversion"
+        adc_sample_speed = {
+            0b00: "15-bit resolution",
+            0b01: "14-bit resolution",
+            0b10: "13-bit resolution",
+            0b11: "12-bit resolution (not recommended)"
+        }[(data >> 4) & 0x03]
+        adc_avg = "Running average" if data & 0x08 else "Single value"
+        adc_avg_init = "Start average with new ADC conversion" if data & 0x04 else "Start average with existing register value"
+    
+        return {
+            "ADC Control": adc_control,
+            "ADC Conversion Rate": adc_rate,
+            "ADC Sample Speed": adc_sample_speed,
+            "ADC Average Control": adc_avg,
+            "ADC Average Init Control": adc_avg_init
+        }
+        
+    ###################
+    if reg_addr == 0x2D:
+        masks = {
+            7: "VSYS short circuit INT",
+            6: "VSYS over-voltage INT",
+            5: "OTG over-voltage INT",
+            4: "OTG under-voltage INT",
+            2: "Thermal shutdown INT"
+        }
+    
+        status = {}
+        for bit_position, description in masks.items():
+            mask_value = (data >> bit_position) & 0x01
+            status[description] = 'masked' if mask_value else 'unmasked'
+    
+        # Reserved bits (bits 3 and bits 1-0) are not used, so they don't affect functionality.
+    
+        return status
+
+    ###################
+    if reg_addr == 0x2C:
+        masks = {
+            7: "IBAT regulation INT",
+            6: "VBUS over-voltage INT",
+            5: "VBAT over-voltage INT",
+            4: "IBUS over-current INT",
+            3: "IBAT over-current INT",
+            2: "Converter over-current INT",
+            1: "VAC2 over-voltage INT",
+            0: "VAC1 over-voltage INT"
+        }
+    
+        status = []
+    
+        for bit_position, description in masks.items():
+            mask_value = (data >> bit_position) & 0x01
+            status.append(f"{description}: {'masked' if mask_value else 'unmasked'}")
+        
+        return status
+    ###################
+    if reg_addr == 0x2B:
+        masks = {
+        "VBATOTG_LOW_MASK": "VBAT too low to enable OTG INT",
+        "TS_COLD_MASK": "TS cold temperature INT",
+        "TS_COOL_MASK": "TS cool temperature INT",
+        "TS_WARM_MASK": "TS warm temperature INT",
+        "TS_HOT_MASK": "TS hot temperature INT"
+        }
+
+        status = []
+        for bit_position, description in enumerate(masks.values(), start=0):
+            mask_value = (data >> bit_position) & 0x01
+            status.append(f"{description}: {'masked' if mask_value else 'unmasked'}")
+    
+        # Reserved bits (bits 7-5) handling is not required as they are reserved and should not affect functionality.
+        
+        return status
+    ###################
+
+    if reg_addr == 0x2A:
+        masks = {
+            "DPDM_DONE_MASK": "D+/D- detection done INT",
+            "ADC_DONE_MASK": "ADC conversion done INT",
+            "VSYSP_MASK": "VSYSP min regulation INT",
+            "CHG_TMR_MASK": "Fast charge timer INT",
+            "TRICHG_TMR_MASK": "Trickle charge timer INT",
+            "PRECHG_TMR_MASK": "Pre-charge timer INT",
+            "TOPOFF_TMR_MASK": "Top off timer INT"
+        }
+        
+        # Assuming you want to map each mask to a specific bit, assign bit positions explicitly
+        bit_positions = {
+            "DPDM_DONE_MASK": 0,  # Bit 0
+            "ADC_DONE_MASK": 1,   # Bit 1
+            "VSYSP_MASK": 2,      # Bit 2
+            "CHG_TMR_MASK": 3,    # Bit 3
+            "TRICHG_TMR_MASK": 4, # Bit 4
+            "PRECHG_TMR_MASK": 5, # Bit 5
+            "TOPOFF_TMR_MASK": 6  # Bit 6
+            # Bit 7 is reserved
+        }
+
+        status = []
+        for bit, name in masks.items():
+            bit_position = bit_positions[bit]
+            mask_value = (data >> bit_position) & 0x01
+            status.append(f"{name}: {'masked' if mask_value else 'unmasked'}")
+        
+        # Reserved bit (bit 7) handling is not required as it is reserved and should not affect functionality.
+        return status
+
+    ###################
+    if reg_addr == 0x29:
+        bit_messages = {
+            7: {0: "Charging status change does produce INT", 1: "Charging status change does NOT produce INT"},
+            6: {0: "ICO status change does produce INT", 1: "ICO status change does NOT produce INT"},
+            # No need to include RESERVED bits 5 and 3 as they do not have a status change.
+            4: {0: "VBUS status change does produce INT", 1: "VBUS status change does NOT produce INT"},
+            2: {0: "Entering TREG does produce INT", 1: "Entering TREG does NOT produce INT"},
+            1: {0: "VBAT present status change does produce INT", 1: "VBAT present status change does NOT produce INT"},
+            0: {0: "BC1.2 status change does produce INT", 1: "BC1.2 status change does NOT produce INT"},
+        }
+    
+        messages = []
+        for bit_position, values in bit_messages.items():
+            bit_value = (data >> bit_position) & 1
+            messages.append(values[bit_value])
+    
+        return ', '.join(messages)
+        
+    ###################
+    if reg_addr == 0x28:
+        bit_messages = {
+            7: {0: "IINPDM / IOTG does produce INT pulse", 1: "IINPDM / IOTG does NOT produce INT pulse"},
+            6: {0: "VINPDM / VOTG does produce INT pulse", 1: "VINPDM / VOTG does NOT produce INT pulse"},
+            5: {0: "I2C watchdog timer expired does produce INT pulse", 1: "I2C watchdog timer expired does NOT produce INT pulse"},
+            4: {0: "Poor source detected does produce INT pulse", 1: "Poor source detected does NOT produce INT pulse"},
+            3: {0: "PG toggle does produce INT", 1: "PG toggle does NOT produce INT"},
+            2: {0: "VAC2 present status change does produce INT", 1: "VAC2 present status change does NOT produce INT"},
+            1: {0: "VAC1 present status change does produce INT", 1: "VAC1 present status change does NOT produce INT"},
+            0: {0: "VBUS present status change does produce INT", 1: "VBUS present status change does NOT produce INT"},
+        }
+        
+        messages = []
+        for bit_position, values in bit_messages.items():
+            bit_value = (data >> bit_position) & 1
+            messages.append(values[bit_value])
+        
+        return ', '.join(messages)
+        
+    ###################
+    if reg_addr == 0x27:
+        bit_messages = {
+        7: {0: "System short circuit: Normal", 1: "System short circuit: Detected"},
+        6: {0: "VSYS over-voltage: Normal", 1: "VSYS over-voltage: Detected"},
+        5: {0: "OTG over-voltage: Normal", 1: "OTG over-voltage: Detected"},
+        4: {0: "OTG under-voltage: Normal", 1: "OTG under-voltage: Detected"},
+        3: {0: "Reserved", 1: "Reserved"},
+        2: {0: "Thermal shutdown: Normal", 1: "Thermal shutdown: Detected"},
+        # Bits 1-0 are reserved.
+        }
+    
+        messages = []
+        for bit_position, values in bit_messages.items():
+            # Skip reserved bits.
+            if 'Reserved' in values[0]: continue
+            
+            bit_value = (data >> bit_position) & 1
+            messages.append(values[bit_value])
+    
+        return ', '.join(messages)
+        
+    ###################
+    if reg_addr == 0x26:
+        bit_messages = {
+        0: {0: "VAC1 over-voltage normal", 1: "VAC1 over-voltage detected"},
+        1: {0: "VAC2 over-voltage normal", 1: "VAC2 over-voltage detected"},
+        2: {0: "Converter over-current normal", 1: "Converter over-current detected"},
+        3: {0: "IBAT over-current normal", 1: "IBAT over-current detected"},
+        4: {0: "IBUS over-current normal", 1: "IBUS over-current detected"},
+        5: {0: "VBAT over-voltage normal", 1: "VBAT over-voltage detected"},
+        6: {0: "VBUS over-voltage normal", 1: "VBUS over-voltage detected"},
+        7: {0: "IBAT regulation normal", 1: "IBAT regulation detected"}
+        }
+
+        messages = []
+        for bit_position, values in bit_messages.items():
+            bit_value = (data >> bit_position) & 1
+            messages.append(values[bit_value])
+
+        return ', '.join(messages)
+    
+    ###################
+    if reg_addr == 0x25:  # Conditional for register at 0x25
+        bit_messages = {
+            0: {0: "Normal TS hot temperature", 1: "TS hot temperature (T5) detected"},
+            1: {0: "Normal TS warm temperature", 1: "TS warm temperature (T3) detected"},
+            2: {0: "Normal TS cool temperature", 1: "TS cool temperature (T2) detected"},
+            3: {0: "Normal TS cold temperature", 1: "TS cold temperature (T1) detected"},
+            4: {0: "VBAT above OTG threshold", 1: "VBAT below OTG threshold to enable OTG mode"},
+            # Bits 5 to 7 are reserved and typically would not need a message.
+        }
+        
+        messages = []
+
+        for bit_pos, bit_values in bit_messages.items():
+            bit_state = (data >> bit_pos) & 1
+            messages.append(bit_values[bit_state])
+
+        return ', '.join(messages)
+    
+    ###################
+    if reg_addr == 0x24:  # Conditional for register at 0x24
+        bit_messages = {
+            0: {0: "Top off timer flag not expired", 1: "Top off timer flag expired"},
+            # Bits 1 to 6 have similar structures for their messages.
+            1: {0: "Pre-charge timer not expired", 1: "Pre-charge timer expired"},
+            2: {0: "Trickle charge timer not expired", 1: "Trickle charge timer expired"},
+            3: {0: "Fast charge timer not expired", 1: "Fast charge timer expired"},
+            4: {0: "VSYSMIN regulation not entered or exited", 1: "VSYSMIN regulation entered or exited"},
+            5: {0: "ADC conversion not completed", 1: "ADC conversion completed"},
+            6: {0: "D+/D- detection not completed", 1: "D+/D- detection completed"},
+            # Bit 7 is reserved, typically no message is required.
+        }
+        
+        messages = []
+
+        for bit_pos, bit_values in bit_messages.items():
+            bit_state = (data >> bit_pos) & 1
+            messages.append(bit_values[bit_state])
+
+        return ', '.join(messages)
+    
+    ###################
+    if reg_addr == 0x23:  # Conditional for register at 0x23
+        # Dictionary to hold the status messages for each bit
+        bit_messages = {
+            0: {0: "BC1.2 detection status unchanged", 1: "BC1.2 detection status changed"},
+            1: {0: "VBAT present status unchanged", 1: "VBAT present status changed"},
+            2: {0: "Thermal regulation status unchanged", 1: "TREG signal rising threshold detected"},
+            # Skipping reserved bits as they don't have status messages
+            4: {0: "VBUS status unchanged", 1: "VBUS status changed"},
+            # Skipping reserved bits as they don't have status messages
+            6: {0: "ICO status unchanged", 1: "ICO status changed"},
+            7: {0: "Charge status unchanged", 1: "Charge status changed"}
+        }
+        
+        # Initialize an empty list to store messages for the current register data
+        messages = []
+
+        # Define which bits are reserved and should be skipped
+        reserved_bits = [3, 5]
+
+        # Iterate through each bit position from 0 to 7
+        for bit_pos in range(8):
+            if bit_pos not in reserved_bits:
+                # Extract the bit state at position bit_pos
+                bit_state = (data >> bit_pos) & 1
+                # Append the corresponding message for the bit's state to the messages list
+                messages.append(bit_messages[bit_pos][bit_state])
+
+        # Combine messages
+        return ', '.join(messages)
+        
+    ###################
+    if reg_addr == 0x22:  # Conditional for register at 0x22
+        # Dictionary to hold the status messages for each bit
+        bit_messages = {
+            0: {0: "VBUS present status unchanged", 1: "VBUS present status changed"},
+            1: {0: "VAC1 present status unchanged", 1: "VAC1 present status changed"},
+            2: {0: "VAC2 present status unchanged", 1: "VAC2 present status changed"},
+            3: {0: "Power good", 1: "Power bad"},
+            4: {0: "Poor source status unchanged", 1: "Poor source status changed"},
+            5: {0: "Watchdog timer signal unchanged", 1: "Watchdog timer signal rising edge detected"},
+            6: {0: "VINDPM/VOTG flag status unchanged", 1: "VINDPM/VOTG flag status changed"},
+            7: {0: "IINDPM/IOTG flag status unchanged", 1: "IINDPM/IOTG flag status changed"}
+        }
+        
+        # Initialize an empty list to store messages for the current register data
+        messages = []
+
+        # Iterate through each bit position from 0 to 7
+        for bit_pos in range(8):
+            # Extract the bit state at position bit_pos
+            bit_state = (data >> bit_pos) & 1
+            # Append the corresponding message for the bit's state to the messages list
+            messages.append(bit_messages[bit_pos][bit_state])
+
+        # Combine messages
+        return ', '.join(messages)
+        
+    ###################
     if reg_addr == 0x21:  # Conditional for register at 0x21
         # Dictionary to hold the status messages for each bit
         bit_messages = {
@@ -138,7 +544,6 @@ def interpret_register_data(reg_addr, data):
         return "\n".join(messages)
 
     ###################
-    
     if reg_addr == 0x1F:  # Conditional for register at 0x1F
         # Dictionary to hold the status messages for each bit
         bit_messages = {
@@ -167,7 +572,6 @@ def interpret_register_data(reg_addr, data):
         return ', '.join(messages)  # Returns a string of status messages
 
     ###################
-
     if reg_addr == 0x1E:  # Conditional for register at 0x1E
         # Dictionary to hold the status messages for each bit with context
         bit_messages = {
@@ -201,7 +605,6 @@ def interpret_register_data(reg_addr, data):
         return ', '.join(messages)  # Returns a string of status messages
 
     ###################
-
     if reg_addr == 0x1D:  # Conditional for register at 0x1D
         # Dictionary to hold the status messages for each bit
         bit_messages = {
@@ -232,7 +635,6 @@ def interpret_register_data(reg_addr, data):
         return ', '.join(filter(None, messages))  # filter is used to remove empty messages
 
     ###################
-
     if reg_addr == 0x1C:  # Conditional for register at 0x1C
         # Dictionary to hold the status messages for each bit
         bit_messages = {
@@ -300,7 +702,6 @@ def interpret_register_data(reg_addr, data):
         return ', '.join(filter(None, messages))  # filter is used to remove empty messages
 
     ####################
-    
     if reg_addr == 0x1B:  # Conditional for register at 0x1B
         # Dictionary to hold the status messages for each bit
         bit_messages = {
@@ -386,7 +787,6 @@ def interpret_register_data(reg_addr, data):
         return f"TS_COOL: {ts_cool_msg}, TS_WARM: {ts_warm_msg}, BHOT: {bhot_msg}, BCOLD: {bcold_msg}, TS_IGNORE: {ts_ignore_msg}"
 
     ###################
-
     if reg_addr == 0x17:  # Conditional for register at 0x17
         # Decode JEITA_VSET (bits 7-5)
         jeita_vset = (data >> 5) & 0x07
@@ -435,7 +835,6 @@ def interpret_register_data(reg_addr, data):
         return f"JEITA_VSET: {jeita_vset_msg}, JEITA_ISETH: {jeita_iseth_msg}, JEITA_ISETC: {jeita_isetc_msg}"
 
     ###################
-
     if reg_addr == 0x16:  # Conditional for register at 0x16
         # Decode TREG (bits 7-6)
         treg = (data >> 6) & 0x03
@@ -466,7 +865,6 @@ def interpret_register_data(reg_addr, data):
         return f"TREG: {treg_msg}, TSHUT: {tshut_msg}, VBUS_PD_EN: {vbus_pd_en}, VAC1_PD_EN: {vac1_pd_en}, VAC2_PD_EN: {vac2_pd_en}"
 
     ###################
-
     if reg_addr == 0x15:  # Conditional for register at 0x15
         # Decode VOC_PCT (bits 7-5)
         voc_pct = (data >> 5) & 0x07
@@ -506,7 +904,6 @@ def interpret_register_data(reg_addr, data):
         return f"VOC_PCT: {voc_pct_msg}, VOC_DLY: {voc_dly_msg}, VOC_RATE: {voc_rate_msg}, EN_MPPT: {en_mppt_msg}"
 
     ####################
-
     if reg_addr == 0x14:  # Conditional for register at 0x14
         # Interpret the SFET_PRESENT bit (bit 7)
         sfet_present_msg = "Ship FET Populated" if (data >> 7) & 0x01 else "No Ship FET"
@@ -536,7 +933,6 @@ def interpret_register_data(reg_addr, data):
         return f"SFET_PRESENT: {sfet_present_msg}, EN_IBAT: {en_ibat_msg}, IBAT_REG: {ibat_reg_msg}, EN_INDPNM: {en_indpnm_msg}, EN_EXTILIM: {en_extilim_msg}, EN_BATOC: {en_batoc_msg}"
 
     ###################
-
     if reg_addr == 0x13:  # Conditional for register at 0x13
         # Interpret the EN_ACDC2 bit (bit 7)
         en_acdc2_msg = "AC/DC2 driver control active" if (data >> 7) & 0x01 else "AC/DC2 driver control off (default)"
@@ -566,7 +962,6 @@ def interpret_register_data(reg_addr, data):
         return f"EN_ACDC2: {en_acdc2_msg}, EN_ACDC1: {en_acdc1_msg}, PWM_FREQ: {pwm_freq_msg}, DIS_STAT: {dis_stat_msg}, DIS_VSYS_SHORT: {dis_vsys_short_msg}, DIS_VOTP_LDO: {dis_votp_ldo_msg}, FORCE_VINDPM: {force_vindpm_msg}, EN_IBUS_OCP: {en_ibus_ocp_msg}"
 
     ####################
-
     if reg_addr == 0x12:  # Conditional for register at 0x12
         # Interpret each bit based on the datasheet information
         dis_acdrv_msg = "ACDRV disabled" if (data >> 7) & 0x01 else "ACDRV enabled (default)"
@@ -582,7 +977,6 @@ def interpret_register_data(reg_addr, data):
         return f"DIS_ACDRV: {dis_acdrv_msg}, EN_OTG: {en_otg_msg}, PFM_OTG_DIS: {pfm_otg_dis_msg}, PFM_FWD_DIS: {pfm_fwd_dis_msg}, WKUP_DLY: {wkup_dly_msg}, DIS_LDO: {dis_ldo_msg}, DIS_OTG_OOA: {dis_otg_ooa_msg}, DIS_FWD_OOA: {dis_fwd_ooa_msg}"
 
     ####################
-
     if reg_addr == 0x11:  # Conditional for register at 0x11
         # Interpret the FORCE_INDET bit (bit 7)
         force_indet_msg = "Force NDETP detection" if (data >> 7) & 0x01 else "Do not force NDETP detection (default)"
@@ -615,7 +1009,6 @@ def interpret_register_data(reg_addr, data):
         return f"FORCE_INDET: {force_indet_msg}, AUTO_INDET_EN: {auto_indet_en_msg}, EN_12V: {en_12v_msg}, EN_9V: {en_9v_msg}, NVDCP_EN: {nvdcp_en_msg}, SDRV_CTRL: {sdrv_ctrl_msg}, SDRV_DLY: {sdrv_dly_msg}"
 
     ###################
-
     if reg_addr == 0x10:  # Conditional for register at 0x10
         # Interpret the VAC_OVP bits (bits 5-4)
         vac_ovp = (data >> 4) & 0x03
@@ -646,7 +1039,6 @@ def interpret_register_data(reg_addr, data):
         return f"VAC_OVP: {vac_ovp_msg}, WD_RST: {wd_rst_msg}, WATCHDOG_2: {watchdog_2_msg}"
 
     ####################
-
     if reg_addr == 0x0F:  # Conditional for register at 0x0F
         # Interpret the EN_AUTO_IBATDIS bit (bit 7)
         en_auto_ibatdis_msg = "Enable auto battery discharging" if (data >> 7) & 0x01 else "Disable auto battery discharging (default)"
@@ -675,7 +1067,6 @@ def interpret_register_data(reg_addr, data):
         return f"EN_AUTO_IBATDIS: {en_auto_ibatdis_msg}, FORCE_IBATDIS: {force_ibatdis_msg}, EN_CHG: {en_chg_msg}, EN_ICO: {en_ico_msg}, FORCE_ICO: {force_ico_msg}, EN_HIZ: {en_hiz_msg}, EN_TERM: {en_term_msg}"
 
     ####################
-
     if reg_addr == 0x0E:  # Conditional for register at 0x0E
         # Interpret the TOP_OFF_TIMER bits (bits 7-6)
         top_off_timer = (data >> 6) & 0x03
@@ -711,7 +1102,6 @@ def interpret_register_data(reg_addr, data):
         return f"TOP_OFF_TIMER: {top_off_timer_msg}, EN_TRICHG_TIMER: {en_trichg_timer_msg}, EN_PRECHG_TIMER: {en_prechg_timer_msg}, EN_CHG_TIMER: {en_chg_timer_msg}, CHG_TIMER: {chg_timer_msg}, TMR2X_EN: {tmr2x_en_msg}"
 
     ###################
-
     if reg_addr == 0x0D:  # Conditional for register at 0x0D
         # Interpret the PRECHG_TMR bit (bit 7)
         prechg_tmr_msg = "0.5 hrs pre-charge safety timer" if (data >> 7) & 0x01 else "2 hrs pre-charge safety timer (default)"
@@ -726,7 +1116,6 @@ def interpret_register_data(reg_addr, data):
         return f"PRECHG_TMR: {prechg_tmr_msg}, IOTG_6_0: {iotg_6_0_msg}"
 
     ###################
-
     if reg_addr == 0x0B:  # Conditional for register at 0x0B
         # Extract the 11-bit VOTG value (bits 10-0)
         votg_value = data & 0x7FF  # Mask all but the 11 bits for VOTG
@@ -738,7 +1127,6 @@ def interpret_register_data(reg_addr, data):
         return f"VOTG: {votg_msg}"
 
     ###################
-
     if reg_addr == 0x0A:  # Conditional for register at 0x0A
         # Extract the CELL bits (bits 7-6), if applicable
         cell_value = (data >> 6) & 0x03
@@ -762,7 +1150,6 @@ def interpret_register_data(reg_addr, data):
         return f"CELL: {cell_msg}, TREC: {trec_msg}, VRECHG: {vrechg_msg}"
 
     ####################
-
     if reg_addr == 0x09:  # Conditional for register at 0x09
         # Interpret the STOP_WD_CHG bit (bit 5)
         stop_wd_chg_msg = "WD timer expiration sets EN_CHG=0" if (data >> 5) & 0x01 else "WD timer expiration keeps existing EN_CHG setting (default)"
@@ -777,7 +1164,6 @@ def interpret_register_data(reg_addr, data):
         return f"STOP_WD_CHG: {stop_wd_chg_msg}, ITERM: {iterm_msg}"
 
     ###################
-
     if reg_addr == 0x08:  # Conditional for register at 0x08
         # Interpret the VBAT_LOVW bits (bits 7-6)
         vbat_lowv = (data >> 6) & 0x03
@@ -798,7 +1184,6 @@ def interpret_register_data(reg_addr, data):
         return f"VBAT_LOWV: {vbat_lowv_msg}, IPRECHG: {iprechg_msg}"
 
     ###################
-
     if reg_addr == 0x06:  # Conditional for register at 0x06
         # The IINLIM value is determined by the 8-bit value multiplied by the step size (10mA)
         iinlim_value = data & 0xFF  # Extract the 8-bit value
@@ -806,7 +1191,6 @@ def interpret_register_data(reg_addr, data):
         iinlim_msg = f"{iinlim_current_limit}mA input current limit"
 
     ####################
-
     if reg_addr == 0x05:  # Conditional for register at 0x05
         # The VINDPM value is determined by the 8-bit value multiplied by the step size (100mV)
         vindpm_value = data & 0xFF  # Extract the 8-bit value
@@ -817,7 +1201,6 @@ def interpret_register_data(reg_addr, data):
         return f"VINDPM: {vindpm_msg}"
 
     ####################
-
     if reg_addr == 0x03:  # Conditional for register at 0x03
         # The ICHG current limit value is determined by the 8-bit value multiplied by the step size (10mA)
         ichg_value = data & 0xFF  # Extract the 8-bit value
@@ -828,7 +1211,6 @@ def interpret_register_data(reg_addr, data):
         return f"ICHG: {ichg_msg}"
 
     ####################
-
     if reg_addr == 0x01:  # Conditional for register at 0x01
         
         # The VREG value is determined by the 11-bit value multiplied by the step size (10mV)
@@ -840,7 +1222,6 @@ def interpret_register_data(reg_addr, data):
         return f"VREG: {vreg_msg}"
 
     ####################
-
     if reg_addr == 0x00:  # Conditional for register at 0x00
         # The VYSMIN value is determined by the 6-bit value multiplied by the step size (250mV)
         vysmin_value = data & 0x3F  # Extract the 6-bit value
@@ -868,10 +1249,41 @@ def display_data(reg_info,reg_addr):
     st.text(f"Description: {description}")
     st.write("---")  # Add a separator
 
+def plot_value(value, label, color, max_value):
+    # Calculate the percentage of the value out of its maximum
+    value = str(value[0]) + str(value[1])
+    value = int(value)/10000
+    percentage = (value / max_value) * 100
+    fig, ax = plt.subplots(figsize=(8, 1))  # Smaller height as it's a single bar
+    ax.barh(label, percentage, color=color)
+    ax.set_xlim(0, 100)  # Since we're now working with percentages, the limit is always 100
+    ax.get_yaxis().set_visible(False)  # Hide y-axis labels
+    ax.set_xticks([0, 25, 50, 75, 100])
+    ax.set_xticklabels(['0%', '25%', '50%', '75%', '100%'])
+    ax.set_title(label + f' {value}V', pad=10)
+    return fig
+
 def main():
-    st.set_page_config(layout="wide")
+    st.set_page_config(layout="wide",page_title = "IrishSat - Power Readout",page_icon = "NDIS-Icon-gold.png",menu_items=None)
     st.title("I2C Register Data Viewer")
-    col1, col2, col3, col4 = st.columns((2,1,1,1))
+    ## power bars
+
+    sysPow = read_register_data(0x3D,2)
+    BatPow = read_register_data(0x3B,2)  
+    VBUSPow = read_register_data(0x35,2)
+    
+
+    # Set up the figure and axis for the plot
+    fig1 = plot_value(sysPow, 'System Power - ', 'yellow',24)
+    st.pyplot(fig1)
+
+    fig2 = plot_value(BatPow, 'Battery Power - ', 'orange',20)
+    st.pyplot(fig2)
+
+    fig3 = plot_value(VBUSPow, 'VBUS Power - ', 'red',30)
+    st.pyplot(fig3)
+
+    #col1, col2, col3, col4 = st.columns((1,1,1,1))
 
     # Create a button in Streamlit to refresh the data
     if st.button("Refresh Data"):
@@ -879,18 +1291,19 @@ def main():
 
         # Display data in a Streamlit table
         for reg_addr, reg_info in registers.items():
-            if reg_addr >= 0x00 and reg_addr <= 0x08:
-                with col1:
-                    display_data(reg_info,reg_addr)
-            elif reg_addr > 0x08 and reg_addr <= 0x0F:
-                with col2:
-                    display_data(reg_info,reg_addr)
-            elif reg_addr > 0x0F and reg_addr <= 0x18:
-                with col3:
-                    display_data(reg_info,reg_addr) 
-            else:
-                with col4:
-                    display_data(reg_info,reg_addr)
+        #     if reg_addr >= 0 and reg_addr <= registers(14):
+        #         with col1:
+        #             display_data(reg_info,reg_addr)
+        #     elif reg_addr > 14 and reg_addr <= 28:
+        #         with col2:
+        #             display_data(reg_info,reg_addr)
+        #     elif reg_addr > 28 and reg_addr <= 42:
+        #         with col3:
+        #             display_data(reg_info,reg_addr) 
+        #     else:
+        #         with col4:
+        #             display_data(reg_info,reg_addr)
+            
             reg_name, length = reg_info
             data = read_register_data(reg_addr, length)
             
