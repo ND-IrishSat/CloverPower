@@ -89,6 +89,41 @@ def interpret_register_data(reg_addr, data):
             combined_data = (combined_data << 8) | byte
         data = combined_data
 
+    ###################
+    if reg_addr == 0x41:  # TDIE_ADC register
+        # Interpret the 16-bit raw value as a signed integer (2's complement)
+        if data & 0x8000:  # Check if the sign bit is set
+            adc_value = data - 0x10000
+        else:
+            adc_value = data
+        # Convert ADC value to temperature using the step size of 0.5°C
+        temperature_C = adc_value * 0.5
+        return f"TDIE Temperature: {temperature_C}°C"
+        
+    ###################
+    if reg_addr == 0x3F:  # TS_ADC register
+        # Multiply the data by the bit step size to get the percentage
+        ts_percentage = data * 0.009766
+        return f"TS ADC Reading: {ts_percentage:.2f}%"
+        
+    ###################
+    if reg_addr == 0x3D:  # VSYS_ADC register
+        # The value is in mV (each bit represents 1 mV)
+        voltage_mV = data
+        return f"VSYS ADC Voltage: {voltage_mV} mV"
+        
+    ###################
+    if reg_addr == 0x3B:  # VBAT_ADC register
+        # Directly interpret the integer value as the voltage in millivolts
+        voltage_mV = data
+        return f"VBAT ADC Voltage: {voltage_mV} mV"
+        
+    ###################
+    if reg_addr == 0x39:  # VAC2_ADC register
+        # The value is in mV (each bit represents 1 mV)
+        voltage_mV = data
+        return f"VAC2 ADC Voltage: {voltage_mV} mV"
+        
     ####################
     if reg_addr == 0x37:
         # Interpret the binary data as an integer in millivolts
