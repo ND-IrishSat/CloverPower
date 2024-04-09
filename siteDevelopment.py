@@ -1248,7 +1248,8 @@ def display_data(reg_info,reg_addr):
 
 def plot_value(value, label, color, max_value):
     # Calculate the percentage of the value out of its maximum
-
+    value = str(value[0]) + str(value[1])
+    value = int(value)/10000
     percentage = (value / max_value) * 100
     fig, ax = plt.subplots(figsize=(8, 1))  # Smaller height as it's a single bar
     ax.barh(label, percentage, color=color)
@@ -1256,7 +1257,7 @@ def plot_value(value, label, color, max_value):
     ax.get_yaxis().set_visible(False)  # Hide y-axis labels
     ax.set_xticks([0, 25, 50, 75, 100])
     ax.set_xticklabels(['0%', '25%', '50%', '75%', '100%'])
-    ax.set_title(label, pad=10)
+    ax.set_title(label + f' {value}V', pad=10)
     return fig
 
 def main():
@@ -1264,19 +1265,19 @@ def main():
     st.title("I2C Register Data Viewer")
     ## power bars
 
-    value1 = 45  
-    value2 = 35  
-    value3 = 20
+    sysPow = read_register_data(0x3D,2)
+    BatPow = read_register_data(0x3B,2)  
+    VBUSPow = read_register_data(0x35,2)
     
 
     # Set up the figure and axis for the plot
-    fig1 = plot_value(value1, 'System Power', 'yellow',24)
+    fig1 = plot_value(sysPow, 'System Power - ', 'yellow',24)
     st.pyplot(fig1)
 
-    fig2 = plot_value(value2, 'Battery Power', 'orange',20)
+    fig2 = plot_value(BatPow, 'Battery Power - ', 'orange',20)
     st.pyplot(fig2)
 
-    fig3 = plot_value(value3, 'VBUS Power', 'red',30)
+    fig3 = plot_value(VBUSPow, 'VBUS Power - ', 'red',30)
     st.pyplot(fig3)
 
     #col1, col2, col3, col4 = st.columns((1,1,1,1))
