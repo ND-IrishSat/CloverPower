@@ -1265,19 +1265,22 @@ def main():
     st.title("I2C Register Data Viewer")
     ## power bars
 
-    sysPow = read_register_data(0x3D,2)
-    BatPow = read_register_data(0x3B,2)  
-    VBUSPow = read_register_data(0x35,2)
-    
+    #sysVolt = read_register_data(0x3D,2)
+    BatVolt = read_register_data(0x3B,2)  
+    BUSVolt = read_register_data(0x35,2)
+
+    #sysAmp = read_register_data(,2) we dont have SYS amperage seems like. Won't have until control board comes in with power monitor (where we add estimates of i2c chip consumption and regulator efficiencies)
+    BatAmp = read_register_data(0x33,2)  
+    BUSAmp = read_register_data(0x31,2)
 
     # Set up the figure and axis for the plot
-    fig1 = plot_value(sysPow, 'System Power - ', 'yellow',24)
-    st.pyplot(fig1)
+    #fig1 = plot_value(sysPow, 'System Power - ', 'gold',24)
+    #st.pyplot(fig1)
 
-    fig2 = plot_value(BatPow, 'Battery Power - ', 'orange',20)
+    fig2 = plot_value(BatPow, 'Battery Power - ', 'gold',20)
     st.pyplot(fig2)
 
-    fig3 = plot_value(VBUSPow, 'VBUS Power - ', 'red',30)
+    fig3 = plot_value(VBUSPow, 'VBUS Power - ', 'gold',30)
     st.pyplot(fig3)
 
     #col1, col2, col3, col4 = st.columns((1,1,1,1))
