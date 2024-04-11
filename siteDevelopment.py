@@ -1273,14 +1273,14 @@ def main():
     BATAmp = read_register_data(0x33,2)  
     BUSAmp = read_register_data(0x31,2)
 
-    BatPow = BATVolt*BATAmp
+    BATPow = BATVolt*BATAmp
     BUSPow = BUSVolt*BUSAmp
 
     # Set up the figure and axis for the plot
     #fig1 = plot_value(sysPow, 'System Power - ', 'gold',24) we dont have SYS amperage seems like. Won't have until control board comes in with power monitor (where we add estimates of i2c chip consumption and regulator efficiencies)
     #st.pyplot(fig1)
 
-    fig2 = plot_value(BatPow, 'Battery Power - ', 'gold',20)
+    fig2 = plot_value(BATPow, 'Battery Power - ', 'gold',20)
     st.pyplot(fig2)
 
     fig3 = plot_value(BUSPow, 'VBUS Power - ', 'gold',30)
