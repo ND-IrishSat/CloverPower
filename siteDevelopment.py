@@ -1264,61 +1264,78 @@ def main():
     st.set_page_config(layout="wide",page_title = "IrishSat - Power Readout",page_icon = "NDIS-Icon-gold.png",menu_items=None)
     st.title("I2C Register Data Viewer")
     ## power bars
+    tab1, tab2 = st.tabs(["Data Viewer", "Raw Data"])
+    with tab1: 
+        option = st.selectbox('How would you like to be contacted?',(registers.values()))
+        
+        reg_addr = [values for values, key in registers.items() if key == option]
+        
+        reg_name, length = option
+        data = read_register_data(reg_addr, length)
+        # Assuming interpret_register_data returns a string description
+        description = interpret_register_data(reg_addr, data)
+        binary_value = f'{data:02b}' if isinstance(data, int) else ' '.join([f'{byte:02b}' for byte in data])
 
-    #sysVolt = read_register_data(0x3D,2)
-    BATVolt = int(str(read_register_data(0x3B,2)[0]) + str(read_register_data(0x3B,2)[1]))
-    BUSVolt = int(str(read_register_data(0x35,2)[0]) + str(read_register_data(0x35,2)[1]))
+        # Use Streamlit to display each register's data
+        st.write(f"**{reg_name}**")
+        st.text(f"Binary Value: {binary_value}")
+        st.text(f"Description: {description}")
+        st.write("---")  # Add a separator
+    with tab2: 
+        #sysVolt = read_register_data(0x3D,2)
+        BATVolt = int(str(read_register_data(0x3B,2)[0]) + str(read_register_data(0x3B,2)[1]))
+        BUSVolt = int(str(read_register_data(0x35,2)[0]) + str(read_register_data(0x35,2)[1]))
 
-    #sysAmp = read_register_data(,2)
-    BATAmp = read_register_data(0x33,2)  
-    BUSAmp = read_register_data(0x31,2)
+        #sysAmp = read_register_data(,2)
+        BATAmp = read_register_data(0x33,2)  
+        BUSAmp = read_register_data(0x31,2)
 
-    BATPow = BATVolt*BATAmp
-    BUSPow = BUSVolt*BUSAmp
+        BatPow = BATVolt*BATAmp
+        BUSPow = BUSVolt*BUSAmp
 
-    # Set up the figure and axis for the plot
-    #fig1 = plot_value(sysPow, 'System Power - ', 'gold',24) we dont have SYS amperage seems like. Won't have until control board comes in with power monitor (where we add estimates of i2c chip consumption and regulator efficiencies)
-    #st.pyplot(fig1)
+        # Set up the figure and axis for the plot
+        #fig1 = plot_value(sysPow, 'System Power - ', 'gold',24) we dont have SYS amperage seems like. Won't have until control board comes in with power monitor (where we add estimates of i2c chip consumption and regulator efficiencies)
+        #st.pyplot(fig1)
 
-    fig2 = plot_value(BATPow, 'Battery Power - ', 'gold',20)
-    st.pyplot(fig2)
+        fig2 = plot_value(BatPow, 'Battery Power - ', 'gold',20)
+        st.pyplot(fig2)
 
-    fig3 = plot_value(BUSPow, 'VBUS Power - ', 'gold',30)
-    st.pyplot(fig3)
+        fig3 = plot_value(BUSPow, 'VBUS Power - ', 'gold',30)
+        st.pyplot(fig3)
 
-    #col1, col2, col3, col4 = st.columns((1,1,1,1))
+        #col1, col2, col3, col4 = st.columns((1,1,1,1))
 
-    # Create a button in Streamlit to refresh the data
-    if st.button("Refresh Data"):
-        # This forces Streamlit to rerun the script, refreshing the data
+        # Create a button in Streamlit to refresh the data
+        if st.button("Refresh Data"):
+            # This forces Streamlit to rerun the script, refreshing the data
 
-        # Display data in a Streamlit table
-        for reg_addr, reg_info in registers.items():
-        #     if reg_addr >= 0 and reg_addr <= registers(14):
-        #         with col1:
-        #             display_data(reg_info,reg_addr)
-        #     elif reg_addr > 14 and reg_addr <= 28:
-        #         with col2:
-        #             display_data(reg_info,reg_addr)
-        #     elif reg_addr > 28 and reg_addr <= 42:
-        #         with col3:
-        #             display_data(reg_info,reg_addr) 
-        #     else:
-        #         with col4:
-        #             display_data(reg_info,reg_addr)
-            
-            reg_name, length = reg_info
-            data = read_register_data(reg_addr, length)
-            
-            # Assuming interpret_register_data returns a string description
-            description = interpret_register_data(reg_addr, data)
-            binary_value = f'{data:02b}' if isinstance(data, int) else ' '.join([f'{byte:02b}' for byte in data])
+            # Display data in a Streamlit table
+            for reg_addr, reg_info in registers.items():
+            #     if reg_addr >= 0 and reg_addr <= registers(14):
+            #         with col1:
+            #             display_data(reg_info,reg_addr)
+            #     elif reg_addr > 14 and reg_addr <= 28:
+            #         with col2:
+            #             display_data(reg_info,reg_addr)
+            #     elif reg_addr > 28 and reg_addr <= 42:
+            #         with col3:
+            #             display_data(reg_info,reg_addr) 
+            #     else:
+            #         with col4:
+            #             display_data(reg_info,reg_addr)
+                
+                reg_name, length = reg_info
+                data = read_register_data(reg_addr, length)
+                
+                # Assuming interpret_register_data returns a string description
+                description = interpret_register_data(reg_addr, data)
+                binary_value = f'{data:02b}' if isinstance(data, int) else ' '.join([f'{byte:02b}' for byte in data])
 
-            # Use Streamlit to display each register's data
-            st.write(f"**{reg_name}**")
-            st.text(f"Binary Value: {binary_value}")
-            st.text(f"Description: {description}")
-            st.write("---")  # Add a separator
+                # Use Streamlit to display each register's data
+                st.write(f"**{reg_name}**")
+                st.text(f"Binary Value: {binary_value}")
+                st.text(f"Description: {description}")
+                st.write("---")  # Add a separator
 
 if __name__ == "__main__":
     main()
