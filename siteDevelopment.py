@@ -1258,7 +1258,7 @@ def plot_value(value, label, color, max_value):
     ax.get_yaxis().set_visible(False)  # Hide y-axis labels
     ax.set_xticks([0, 25, 50, 75, 100])
     ax.set_xticklabels(['0%', '25%', '50%', '75%', '100%'])
-    ax.set_title(label + f' {value}V', pad=10)
+    ax.set_title(label + f' {value}mW', pad=10)
     return fig
 
 def main():
@@ -1307,25 +1307,26 @@ def main():
         fig3 = plot_value(BUSPow, 'VBUS Power - ', 'gold',30)
         st.pyplot(fig3)
         # Create a button in Streamlit to refresh the data
-        if st.button("Refresh Data"):
-            # This forces Streamlit to rerun the script, refreshing the data
-
-            # Display data in a Streamlit table
-            for reg_addr, reg_info in registers.items():
+        
+        oldTime = 0
+        
+        ## this part needs to live update every n seconds
+        for reg_addr, reg_info in registers.items():
+        
+            reg_name, length = reg_info
+            data = read_register_data(reg_addr, length)
             
-                reg_name, length = reg_info
-                data = read_register_data(reg_addr, length)
-                
-                # Assuming interpret_register_data returns a string description
-                description = interpret_register_data(reg_addr, data)
-                
-                binary_value = f'{data:02b}' if isinstance(data, int) else ' '.join([f'{byte:02b}' for byte in data])
+            # Assuming interpret_register_data returns a string description
+            description = interpret_register_data(reg_addr, data)
+            
+            binary_value = f'{data:02b}' if isinstance(data, int) else ' '.join([f'{byte:02b}' for byte in data])
 
-                # Use Streamlit to display each register's data
-                st.write(f"**{reg_name}**")
-                st.text(f"Binary Value: {binary_value}")
-                st.text(f"Description: {description}")
-                st.write("---")  # Add a separator
+            # Use Streamlit to display each register's data
+            st.write(f"**{reg_name}**")
+            st.text(f"Binary Value: {binary_value}")
+            st.text(f"Description: {description}")
+            st.write("---")  # Add a separator
+            oldTime = time.time()
 
 if __name__ == "__main__":
     main()
