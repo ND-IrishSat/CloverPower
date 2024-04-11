@@ -1,6 +1,7 @@
 import streamlit as st
 import random
 import matplotlib.pyplot as plt
+import time
 
 # Initialize I2C bus
 
@@ -1266,14 +1267,15 @@ def main():
     ## power bars
     tab1, tab2 = st.tabs(["Data Viewer", "Raw Data"])
     with tab1: 
-        option = st.selectbox('How would you like to be contacted?',(registers.values()))
-        
-        reg_addr = [values for values, key in registers.items() if key == option]
-        
+        option = st.selectbox('Select Register you would like to view',(registers.values()))
+        reg_addr = [values for values, key in registers.items() if key == option]  
         reg_name, length = option
         data = read_register_data(reg_addr, length)
-        # Assuming interpret_register_data returns a string description
-        description = interpret_register_data(reg_addr, data)
+       
+        data = read_register_data(reg_addr, length)
+        
+        description = interpret_register_data(reg_addr[0], data)
+        
         binary_value = f'{data:02b}' if isinstance(data, int) else ' '.join([f'{byte:02b}' for byte in data])
 
         # Use Streamlit to display each register's data
@@ -1281,6 +1283,8 @@ def main():
         st.text(f"Binary Value: {binary_value}")
         st.text(f"Description: {description}")
         st.write("---")  # Add a separator
+        
+            
     with tab2: 
         #sysVolt = read_register_data(0x3D,2)
         BATVolt = int(str(read_register_data(0x3B,2)[0]) + str(read_register_data(0x3B,2)[1]))
@@ -1302,33 +1306,19 @@ def main():
 
         fig3 = plot_value(BUSPow, 'VBUS Power - ', 'gold',30)
         st.pyplot(fig3)
-
-        #col1, col2, col3, col4 = st.columns((1,1,1,1))
-
         # Create a button in Streamlit to refresh the data
         if st.button("Refresh Data"):
             # This forces Streamlit to rerun the script, refreshing the data
 
             # Display data in a Streamlit table
             for reg_addr, reg_info in registers.items():
-            #     if reg_addr >= 0 and reg_addr <= registers(14):
-            #         with col1:
-            #             display_data(reg_info,reg_addr)
-            #     elif reg_addr > 14 and reg_addr <= 28:
-            #         with col2:
-            #             display_data(reg_info,reg_addr)
-            #     elif reg_addr > 28 and reg_addr <= 42:
-            #         with col3:
-            #             display_data(reg_info,reg_addr) 
-            #     else:
-            #         with col4:
-            #             display_data(reg_info,reg_addr)
-                
+            
                 reg_name, length = reg_info
                 data = read_register_data(reg_addr, length)
                 
                 # Assuming interpret_register_data returns a string description
                 description = interpret_register_data(reg_addr, data)
+                
                 binary_value = f'{data:02b}' if isinstance(data, int) else ' '.join([f'{byte:02b}' for byte in data])
 
                 # Use Streamlit to display each register's data
