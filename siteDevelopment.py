@@ -1308,25 +1308,25 @@ def main():
         st.pyplot(fig3)
         # Create a button in Streamlit to refresh the data
         
-        oldTime = 0
         
-        ## this part needs to live update every n seconds
-        for reg_addr, reg_info in registers.items():
-        
-            reg_name, length = reg_info
-            data = read_register_data(reg_addr, length)
+        if st.button("Refresh Data"):
+            ## this part needs to live update every n seconds
+            for reg_addr, reg_info in registers.items():
             
-            # Assuming interpret_register_data returns a string description
-            description = interpret_register_data(reg_addr, data)
-            
-            binary_value = f'{data:02b}' if isinstance(data, int) else ' '.join([f'{byte:02b}' for byte in data])
+                reg_name, length = reg_info
+                data = read_register_data(reg_addr, length)
+                
+                # Assuming interpret_register_data returns a string description
+                description = interpret_register_data(reg_addr, data)
+                
+                binary_value = f'{data:02b}' if isinstance(data, int) else ' '.join([f'{byte:02b}' for byte in data])
 
-            # Use Streamlit to display each register's data
-            st.write(f"**{reg_name}**")
-            st.text(f"Binary Value: {binary_value}")
-            st.text(f"Description: {description}")
-            st.write("---")  # Add a separator
-            oldTime = time.time()
+                # Use Streamlit to display each register's data
+                st.write(f"**{reg_name}**")
+                st.text(f"Binary Value: {binary_value}")
+                st.text(f"Description: {description}")
+                st.write("---")  # Add a separator
+                
 
 if __name__ == "__main__":
     main()
