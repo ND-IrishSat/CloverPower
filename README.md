@@ -8,3 +8,4 @@ To view the I2C registers, use the readTerminalMPPT.py file. This file prints ou
    1. Type `cloverPower` into the user and `irishsat` into the password, then type `ifconfig` the ip address will be listed on this screen, then replace the ip in SSH with this new
    address
 3. Once you have command line access, type `python3 readTerminalMPPT.py`
+   i. There might be an error that pops up, this is because the terminal window is too small, just fullscreen it and run again.
