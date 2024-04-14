@@ -2,8 +2,10 @@
 from flask import Flask, render_template, request, redirect, url_for
 import RPi.GPIO as GPIO
 import random
+import smbus
 
 app = Flask(__name__)   # Create an instance of flask called "app"
+bus = smbus.SMBus(1)
 device_address = 0x6B  # Example device address; replace with your actual device address
 
 # Define registers and their byte lengths
