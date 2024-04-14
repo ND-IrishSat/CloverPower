@@ -1246,19 +1246,19 @@ def interpret_register_data(reg_addr, data):
 #     st.text(f"Description: {description}")
 #     st.write("---")  # Add a separator
 
-def plot_value(value, label, color, max_value):
-    # Calculate the percentage of the value out of its maximum
-    value = str(value[0]) + str(value[1])
-    value = int(value)/10000
-    percentage = (value / max_value) * 100
-    fig, ax = plt.subplots(figsize=(8, 1))  # Smaller height as it's a single bar
-    ax.barh(label, percentage, color=color)
-    ax.set_xlim(0, 100)  # Since we're now working with percentages, the limit is always 100
-    ax.get_yaxis().set_visible(False)  # Hide y-axis labels
-    ax.set_xticks([0, 25, 50, 75, 100])
-    ax.set_xticklabels(['0%', '25%', '50%', '75%', '100%'])
-    ax.set_title(label + f' {value}mW', pad=10)
-    return fig
+# def plot_value(value, label, color, max_value):
+#     # Calculate the percentage of the value out of its maximum
+#     value = str(value[0]) + str(value[1])
+#     value = int(value)/10000
+#     percentage = (value / max_value) * 100
+#     fig, ax = plt.subplots(figsize=(8, 1))  # Smaller height as it's a single bar
+#     ax.barh(label, percentage, color=color)
+#     ax.set_xlim(0, 100)  # Since we're now working with percentages, the limit is always 100
+#     ax.get_yaxis().set_visible(False)  # Hide y-axis labels
+#     ax.set_xticks([0, 25, 50, 75, 100])
+#     ax.set_xticklabels(['0%', '25%', '50%', '75%', '100%'])
+#     ax.set_title(label + f' {value}mW', pad=10)
+#     return fig
 
 # def main():
 #     st.set_page_config(layout="wide",page_title = "IrishSat - Power Readout",page_icon = "NDIS-Icon-gold.png",menu_items=None)
@@ -1338,7 +1338,7 @@ def main():
         length = int(length)  # Convert length to integer if necessary
         reg_addr = [values for values, key in registers.items() if key == reg_name]  
         data = read_register_data(reg_addr, length)
-        description = interpret_register_data(reg_addr[0], data)
+        description = interpret_register_data(reg_addr, data)
         binary_value = f'{data:02b}' if isinstance(data, int) else ' '.join([f'{byte:02b}' for byte in data])
         return render_template("view_data.html", reg_name=reg_name, binary_value=binary_value, description=description)
     else:
