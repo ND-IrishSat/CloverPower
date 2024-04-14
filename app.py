@@ -1333,15 +1333,16 @@ def interpret_register_data(reg_addr, data):
 @app.route("/", methods=['GET', 'POST'])
 def main():
     if request.method == 'POST':
-        # Ensure 'register' corresponds to the name attribute in your form's select box
         register_data = request.form['register']
-        reg_name, length = register_data.split(',')
-        length = int(length)
-        reg_addr = [addr for addr, info in registers.items() if info[0] == reg_name][0]
-        data = read_register_data(reg_addr, int(length))
-        description = interpret_register_data(reg_addr, data)
-        binary_value = f'{data:02b}' if isinstance(data, int) else ' '.join([f'{byte:02b}' for byte in data])
-        return render_template("view_data.html", reg_name=reg_name, binary_value=binary_value, description=description)
+        reg_addr, length = register_data.split(',')  # Splitting the string into two parts
+        reg_addr = int(reg_addr)  # Convert reg_addr to integer
+        length = int(length)  # Convert length to integer
+        reg_info = registers.get(reg_addr)
+        if reg_info:
+            data = read_register_data(reg_addr, length)
+            description = interpret_register_data(reg_addr, data)
+            binary_value = f'{data:02b}' if isinstance(data, int) else ' '.join([f'{byte:02b}' for byte in data])
+            return render_template("view_data.html", reg_name=reg_info[0], binary_value=binary_value, description=description)
     else:
         # Pass the whole dictionary to the template and handle it there
         return render_template("index.html", registers=registers)
