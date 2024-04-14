@@ -93,6 +93,40 @@ def interpret_register_data(reg_addr, data):
         data = combined_data
 
     ###################
+    if reg_addr == 0x47:  # DPDM_Driver register
+        dplus_dac = (data >> 5) & 0x07  # Extract DPLUS_DAC bits 7-5
+        dminus_dac = (data >> 2) & 0x07  # Extract DMINUS_DAC bits 4-2
+
+        # Mapping the DAC values to their corresponding voltage levels
+        voltage_levels = {
+            0: "High Impedance (HIZ)",
+            1: "0 V",
+            2: "0.6 V",
+            3: "1.2 V",
+            4: "2.0 V",
+            5: "2.7 V",
+            6: "3.3 V",
+            7: "D+/D- Short"  # or 'reserved' based on the specific DAC
+        }
+        
+        dplus_voltage = voltage_levels.get(dplus_dac, "Unknown")
+        dminus_voltage = voltage_levels.get(dminus_dac, "Unknown")
+
+        return f"DPLUS_DAC Voltage Level: {dplus_voltage}, DMINUS_DAC Voltage Level: {dminus_voltage}"
+        
+    ###################
+    if reg_addr == 0x45:  # D-_ADC register
+        # The ADC value represents voltage in millivolts directly
+        voltage_mV = data  # 1 LSB = 1 mV
+        return f"D- ADC Voltage: {voltage_mV} mV"
+        
+    ###################
+    if reg_addr == 0x43:  # D+_ADC register
+        # The ADC value represents voltage in millivolts directly
+        voltage_mV = data  # 1 LSB = 1 mV
+        return f"D+ ADC Voltage: {voltage_mV} mV"
+        
+    ###################
     if reg_addr == 0x41:  # TDIE_ADC register
         # Interpret the 16-bit raw value as a signed integer (2's complement)
         if data & 0x8000:  # Check if the sign bit is set
