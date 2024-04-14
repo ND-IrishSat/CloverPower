@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register Viewer</title>
+</head>
+<body>
+    <h1>I2C Register Data Viewer</h1>
+    <form action="/" method="post">
+        <select name="register">
+            {% for reg_name, length in registers %}
+                <option value="{{ reg_name }},{{ length }}">{{ reg_name }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">View Data</button>
+    </form>
+</body>
+</html>
