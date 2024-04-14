@@ -13,7 +13,8 @@ register_address = 0x10
 register_address2 = 0x0F
 ## Enable MPPT address
 register_address3 = 0x15
-
+## Enable ADC control
+register_address4 = 0x2E
 # Set the bit at bit_position
 ## Watchdog OFF
 new_value = 0b10000000
@@ -21,7 +22,8 @@ new_value = 0b10000000
 new_value2 = 0b10110010
 ## EN MPPT
 new_value3 = 0b10101011
-
+## EN ADC control
+new_value4 = 0b10110000
 
 
 
