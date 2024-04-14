@@ -1,6 +1,7 @@
 
 from flask import Flask, render_template, request, redirect, url_for
 import RPi.GPIO as GPIO
+from random import random
 
 app = Flask(__name__)   # Create an instance of flask called "app"
 device_address = 0x6B  # Example device address; replace with your actual device address
@@ -1329,17 +1330,20 @@ def plot_value(value, label, color, max_value):
 
 
 
-@app.route("/", methods=['GET', 'POST'])      # This is our default handler, if no path is given
-def index():
+@app.route("/", methods=['GET', 'POST'])
+def main():
     if request.method == 'POST':
-        reg_name, length = request.form['register']
+        register_data = request.form['register']
+        reg_name, length = register_data.split(',')  # Splitting the string into two parts
+        length = int(length)  # Convert length to integer if necessary
         reg_addr = [values for values, key in registers.items() if key == reg_name]  
-        data = your_register_module.read_register_data(reg_addr, length)
-        description = your_register_module.interpret_register_data(reg_addr[0], data)
+        data = read_register_data(reg_addr, length)
+        description = interpret_register_data(reg_addr[0], data)
         binary_value = f'{data:02b}' if isinstance(data, int) else ' '.join([f'{byte:02b}' for byte in data])
         return render_template("view_data.html", reg_name=reg_name, binary_value=binary_value, description=description)
     else:
         return render_template("index.html", registers=list(registers.values()))
+
 
 # The magic happens here. When some http request comes in with a path of
 #  gpio/x/y, the Flask app will attempt to parse that as x=pin and y=level.
