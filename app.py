@@ -1333,16 +1333,18 @@ def interpret_register_data(reg_addr, data):
 @app.route("/", methods=['GET', 'POST'])
 def main():
     if request.method == 'POST':
+        # Ensure 'register' corresponds to the name attribute in your form's select box
         register_data = request.form['register']
-        reg_name, length = register_data.split(',')  # Splitting the string into two parts
-        length = int(length)  # Convert length to integer if necessary
-        reg_addr = [values for values, key in registers.items() if key == reg_name]  
-        data = read_register_data(reg_addr, length)
+        reg_name, length = register_data.split(',')
+        length = int(length)
+        reg_addr = [addr for addr, info in registers.items() if info[0] == reg_name][0]
+        data = read_register_data(reg_addr, int(length))
         description = interpret_register_data(reg_addr, data)
         binary_value = f'{data:02b}' if isinstance(data, int) else ' '.join([f'{byte:02b}' for byte in data])
         return render_template("view_data.html", reg_name=reg_name, binary_value=binary_value, description=description)
     else:
-        return render_template("index.html", registers=list(registers.values()))
+        # Pass the whole dictionary to the template and handle it there
+        return render_template("index.html", registers=registers)
 
 
 # The magic happens here. When some http request comes in with a path of
