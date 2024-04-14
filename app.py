@@ -1,7 +1,7 @@
 
 from flask import Flask, render_template, request, redirect, url_for
 import RPi.GPIO as GPIO
-from random import random
+import random
 
 app = Flask(__name__)   # Create an instance of flask called "app"
 device_address = 0x6B  # Example device address; replace with your actual device address
