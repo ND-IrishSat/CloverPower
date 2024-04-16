@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for
 import RPi.GPIO as GPIO
 import random
 import smbus
+import sleep
 
 app = Flask(__name__)   # Create an instance of flask called "app"
 bus = smbus.SMBus(1)
@@ -1387,5 +1388,6 @@ def main():
 #  Note that there is no error handling here! Failure to properly specify the
 #  route will result in a 404 error.
 
-if __name__ == "__main__":
+while __name__ == "__main__":
     app.run(host='10.7.171.93', port=5000)
+    sleep(1000)

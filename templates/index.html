@@ -24,7 +24,6 @@
 <body>
 
     <h1>I2C Register Data Viewer</h1>
-    {% while true %}
     <p value="{{SYSADC}}">{{SYSADC}}</p>
 
     <form action="/" method="post">
@@ -35,8 +34,7 @@
         </select>
         <button type="submit">View Data</button>
     </form>
-    {%sleep(2000)%}
-    {% endwhile %}
+
     
     
 
