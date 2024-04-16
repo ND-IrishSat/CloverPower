@@ -16,12 +16,17 @@
         h2 {
           color: blue;
         }
+        p {
+            color: red;
+        }
       </style>
 </head>
 <body>
 
     <h1>I2C Register Data Viewer</h1>
+
     <p value="{{allen}}">{{allen}}</p>
+
     <form action="/" method="post">
         <select class="form-select" aria-label="Default select example" name="register">
             {% for reg_addr, reg_info in registers.items() %}
