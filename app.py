@@ -1391,4 +1391,4 @@ def main():
 
 while __name__ == "__main__":
     app.run(host='10.7.171.93', port=5000)
-    sleep(1000)
+    sleep(1)
