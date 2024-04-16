@@ -19,7 +19,9 @@
       </style>
 </head>
 <body>
+
     <h1>I2C Register Data Viewer</h1>
+    <p>{{allen}}</p>
     <form action="/" method="post">
         <select class="form-select" aria-label="Default select example" name="register">
             {% for reg_addr, reg_info in registers.items() %}
@@ -28,7 +30,7 @@
         </select>
         <button type="submit">View Data</button>
     </form>
-    <p>{{allen}}</p>
+    
     
     
 
