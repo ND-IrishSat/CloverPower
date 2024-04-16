@@ -1365,7 +1365,6 @@ def interpret_register_data(reg_addr, data):
 
 
 
-
 @app.route("/", methods=['GET', 'POST'])
 def main():
     if request.method == 'POST':
@@ -1378,11 +1377,10 @@ def main():
             data = read_register_data(reg_addr, length)
             description = interpret_register_data(reg_addr, data)
             binary_value = f'{data:02b}' if isinstance(data, int) else ' '.join([f'{byte:02b}' for byte in data])
-            return render_template("view_data.html", reg_name=reg_info[0], binary_value=binary_value, description=description)
+            return render_template("index.html", reg_name=reg_info[0], binary_value=binary_value, description=description)
     else:
         # Pass the whole dictionary to the template and handle it there
-        return render_template("index.html", registers=registers)
-
+        return render_template("index.html", registers=registers,allen = "Allen is cool")
 
 # The magic happens here. When some http request comes in with a path of
 #  gpio/x/y, the Flask app will attempt to parse that as x=pin and y=level.
