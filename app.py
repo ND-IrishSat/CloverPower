@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for
 import RPi.GPIO as GPIO
 import random
 import smbus
-import sleep
+from time import sleep
 
 app = Flask(__name__)   # Create an instance of flask called "app"
 bus = smbus.SMBus(1)
