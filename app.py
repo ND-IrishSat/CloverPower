@@ -5,6 +5,7 @@ import random
 import smbus
 from time import sleep
 from random import randint
+import json
 
 app = Flask(__name__)   # Create an instance of flask called "app"
 bus = smbus.SMBus(1)
@@ -1364,6 +1365,15 @@ def interpret_register_data(reg_addr, data):
     #             st.text(f"Description: {description}")
     #             st.write("---")  # Add a separator
 
+@app.route("/update")
+def update():
+    # Generate random data for demonstration purposes
+    random_register = randint(0x01, 0x02)
+    random_value = randint(0, 255)
+    reg_info = registers[random_register]
+    description = f"Updated description for {reg_info[0]}"
+    binary_value = f'{random_value:08b}'
+    return json.dumps({'reg_name': reg_info[0], 'binary_value': binary_value, 'description': description})
 
 
 
@@ -1389,6 +1399,6 @@ def main():
 #  Note that there is no error handling here! Failure to properly specify the
 #  route will result in a 404 error.
 
-while __name__ == "__main__":
+if __name__ == "__main__":
     app.run(host='10.7.171.93', port=5000)
-    sleep(1)
+    
