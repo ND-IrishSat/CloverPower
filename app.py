@@ -1367,13 +1367,13 @@ def interpret_register_data(reg_addr, data):
 
 @app.route("/update")
 def update():
-    # Assuming you have some logic to get data
     random_value = randint(0, 255)
-    reg_info = {"Register1", "Some description based on new data"}
+    # Correctly define reg_info as a tuple, not a set
+    reg_info = ("Register1", f"Description with value {random_value}")
     return jsonify({
-        'reg_name': reg_info[0],
-        'binary_value': f'{random_value:08b}',
-        'description': reg_info[1]
+        'reg_name': reg_info[0],    # Accesses the first element of the tuple
+        'binary_value': f'{random_value:08b}',  # Formats the number as an 8-bit binary
+        'description': reg_info[1]  # Accesses the second element of the tuple
     })
 
 @app.route("/", methods=['GET', 'POST'])
