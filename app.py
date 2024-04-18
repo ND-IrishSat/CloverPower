@@ -172,17 +172,13 @@ def interpret_register_data(reg_addr, data):
         
     ###################
     if reg_addr == 0x35:
-        if data & 0x8000:
-            adc_value = data
-            return f"IBUS ADC Current: {adc_value} mA"
+        adc_value = data
+        return f"IBUS ADC Current: {adc_value} mA"
 
     ###################
     if reg_addr == 0x33:  # IBAT_ADC register
         # Interpret the 16-bit raw value as a signed integer (2's complement)
-        if data & 0x8000:  # Check for a negative value
-            adc_value = data - 0x10000
-        else:
-            adc_value = data
+        adc_value = data
         return f"IBAT ADC Current: {adc_value} mA"
 
     ###################
