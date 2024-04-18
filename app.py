@@ -1380,7 +1380,8 @@ def update():
             0x31: "IBUS_ADC",
             0x33: "IBAT_ADC",
             0x35: "VBUS_ADC",
-            0x3B: "VBAT_ADC"
+            0x3B: "VBAT_ADC",
+            0x3D: "VSYS_ADC"
         }
         for reg_addr, reg_name in registers.items():
             raw_data = read_register_data(reg_addr, 2)

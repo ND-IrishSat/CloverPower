@@ -34,6 +34,9 @@
                 document.getElementById('VBUS_ADC_description').textContent = data.VBUS_ADC_description;
                 document.getElementById('VBAT_ADC_binary').textContent = data.VBAT_ADC_binary;
                 document.getElementById('VBAT_ADC_description').textContent = data.VBAT_ADC_description;
+                document.getElementById('VSYS_ADC_binary').textContent = data.VSYS_ADC_binary;
+                document.getElementById('VSYS_ADC_description').textContent = data.VSYS_ADC_description;
+
             })
             .catch(error => {
                 console.error('Fetch error:', error);
@@ -61,6 +64,11 @@
       <h2 id="VBAT_ADC">VBAT ADC</h2>
       <p id="VBAT_ADC_binary">Binary Value</p>
       <p id="VBAT_ADC_description">Description</p>
+    </div>
+    <div>
+      <h2 id="VSYS_ADC">VBAT ADC</h2>
+      <p id="VSYS_ADC_binary">Binary Value</p>
+      <p id="VSYS_ADC_description">Description</p>
     </div>
     
   
