@@ -1368,7 +1368,7 @@ def interpret_register_data(reg_addr, data):
 @app.route("/update")
 def update():
     SYSPOW = read_register_data(0x3D,2)
-    binary_value = int(f'{SYSPOW:02b}' if isinstance(SYSPOW, int) else ' '.join([f'{byte:02b}' for byte in SYSPOW]))
+    binary_value = int(f'{SYSPOW:02b}' if isinstance(SYSPOW, int) else ''.join([f'{byte:02b}' for byte in SYSPOW]))
     description = interpret_register_data(0x3D, 2)
     # Correctly define reg_info as a tuple, not a set
     reg_info = ("System Power", f"{description}")
@@ -1389,7 +1389,7 @@ def main():
         if reg_info:
             data = read_register_data(reg_addr, length)
             description = interpret_register_data(reg_addr, data)
-            binary_value = f'{data:02b}' if isinstance(data, int) else ''.join([f'{byte:02b}' for byte in data])
+            binary_value = f'{data:02b}' if isinstance(data, int) else ' '.join([f'{byte:02b}' for byte in data])
             return render_template("index.html",registers=registers, reg_name=reg_info[0], binary_value=binary_value, description=description,SYSADC= randint(1,10))
     else:
         # Pass the whole dictionary to the template and handle it there
