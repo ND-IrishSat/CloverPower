@@ -24,7 +24,7 @@
 
     <h1>I2C Register Data Viewer</h1>
     33
-    <script>
+    <<script>
       function updateData() {
           fetch('/update')
               .then(response => response.json())
@@ -32,9 +32,12 @@
                   document.getElementById('SYSPOW').textContent = data.reg_name;
                   document.getElementById('SYSbinary_value').textContent = data.binary_value;
                   document.getElementById('SYSdescription').textContent = data.description;
+              })
+              .catch(error => {
+                  console.error('Fetch error:', error);
               });
       }
-      setInterval(updateData, 2000); // Adjusted to 2000 ms for clarity
+      setInterval(updateData, 2000); // Continuously update every 2000 ms (2 seconds)
     </script>
     <form action="/" method="post">
         <select class="form-select" aria-label="Default select example" name="register">
