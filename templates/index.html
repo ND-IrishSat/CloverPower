@@ -23,15 +23,15 @@
 <body>
 
     <h1>I2C Register Data Viewer</h1>
-    <p id="SYSADC" value="{{SYSADC}}">{{SYSADC}}</p> <!-- Make sure this ID is used in JavaScript if needed -->
+    33
     <script>
       function updateData() {
           fetch('/update')
               .then(response => response.json())
               .then(data => {
                   document.getElementById('SYSPOW').textContent = data.reg_name;
-                  document.getElementById('binary_value').textContent = data.binary_value;
-                  document.getElementById('description').textContent = data.description;
+                  document.getElementById('SYSbinary_value').textContent = data.binary_value;
+                  document.getElementById('SYSdescription').textContent = data.description;
               });
       }
       setInterval(updateData, 2000); // Adjusted to 2000 ms for clarity
@@ -46,8 +46,8 @@
     </form>
     <div>
       <h2 id="SYSPOW">System Power</h2> <!-- Changed from SYSADC to SYSPOW -->
-      <p id="binary_value">Binary Value</p>
-      <p id="description">Description</p>
+      <p id="SYSbinary_value">Binary Value</p>
+      <p id="SYSdescription">Description</p>
     </div>
 </body>
 </html>
