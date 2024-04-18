@@ -1367,15 +1367,11 @@ def interpret_register_data(reg_addr, data):
 
 @app.route("/update")
 def update():
-    # Generate random data for demonstration purposes
-    random_register = randint(0x01, 0x02)
-    random_value = randint(0, 255)
-    reg_info = registers[random_register]
-    description = f"Updated description for {reg_info[0]}"
-    binary_value = f'{random_value:08b}'
-    return json.dumps({'reg_name': reg_info[0], 'binary_value': binary_value, 'description': description})
-
-
+    # Simulate updating the register data
+    random_value = randint(0, 255)  # Generate a new random value
+    register_data = [registers[0x01][0],f"Updated description with value {random_value}",f"{random_value:08b}"]  # Update binary value
+    
+    return json.dumps(register_data)  # Return updated data as JSON
 
 @app.route("/", methods=['GET', 'POST'])
 def main():
