@@ -1368,7 +1368,7 @@ def interpret_register_data(reg_addr, data):
 @app.route("/update")
 def update():
     SYSPOW = read_register_data(0x3D,2)
-    binary_value = f'{SYSPOW:02b}' if isinstance(SYSPOW, int) else ' '.join([f'{byte:02b}' for byte in SYSPOW])
+    binary_value = int(f'{SYSPOW:02b}' if isinstance(SYSPOW, int) else ' '.join([f'{byte:02b}' for byte in SYSPOW]))
     description = interpret_register_data(0x3D, 2)
     # Correctly define reg_info as a tuple, not a set
     reg_info = ("System Power", f"{description}")
