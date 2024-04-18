@@ -1367,16 +1367,34 @@ def interpret_register_data(reg_addr, data):
 
 @app.route("/update")
 def update():
-    SYSPOW = read_register_data(0x3D,2)
-    binary_value = int(f'{SYSPOW:02b}' if isinstance(SYSPOW, int) else ''.join([f'{byte:02b}' for byte in SYSPOW]))
-    description = interpret_register_data(0x3D, 2)
-    # Correctly define reg_info as a tuple, not a set
-    reg_info = ("System Power", f"{description}")
-    return jsonify({
-        'reg_name': reg_info[0],    # Accesses the first element of the tuple
-        'binary_value': f'{binary_value:08b}',  # Formats the number as an 8-bit binary
-        'description': reg_info[1]  # Accesses the second element of the tuple
-    })
+    try:
+        # Reading the VSYS_ADC voltage
+        syspow = read_register_data(0x3D, 2)
+        if syspow is None:
+            raise ValueError("Failed to read data")
+
+        # Assuming syspow returns a list of bytes and we need to combine them
+        if isinstance(syspow, list):
+            combined_data = 0
+            for byte in syspow:
+                combined_data = (combined_data << 8) | byte
+        else:
+            combined_data = syspow
+
+        # Convert to binary string with proper padding
+        binary_value = f'{combined_data:016b}'  # Adjust bit width as needed
+
+        # Get the human-readable description
+        description = interpret_register_data(0x3D, combined_data)
+        reg_info = ("System Power", description)
+
+        return jsonify({
+            'reg_name': reg_info[0],
+            'binary_value': binary_value,
+            'description': reg_info[1]
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route("/", methods=['GET', 'POST'])
 def main():
