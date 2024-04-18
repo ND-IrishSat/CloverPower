@@ -167,40 +167,28 @@ def interpret_register_data(reg_addr, data):
     ####################
     if reg_addr == 0x37:
         # Interpret the binary data as an integer in millivolts
-        voltage_mV = data  # Direct conversion to mV since 1 LSB = 1 mV
-        return f"VAC1 ADC Voltage: {voltage_mV} mV"
+        if data & 0x8000:
+            data = -(0x10000 - data)  # Direct conversion to mV since 1 LSB = 1 mV
+        return f"VAC1 ADC Voltage: {data} mV"
         
     ###################
     if reg_addr == 0x35:
-        adc_value = data
-        return f"IBUS ADC Current: {adc_value} mA"
+        if data & 0x8000:
+            data = -(0x10000 - data)
+        return f"IBUS ADC Current: {data} mA"
 
     ###################
     if reg_addr == 0x33:  # IBAT_ADC register
         # Interpret the 16-bit raw value as a signed integer (2's complement)
-        adc_value = data
-        return f"IBAT ADC Current: {adc_value} mA"
+        if data & 0x8000:
+            data = -(0x10000 - data)
+        return f"IBAT ADC Current: {data} mA"
 
     ###################
     if reg_addr == 0x31:  # IBUS_ADC register
-        # Assuming data is a single 16-bit integer where:
-        # high_byte is the most significant 8 bits and low_byte is the least significant 8 bits
-        high_byte = (data >> 8) & 0xFF  # Extract the high byte by shifting right 8 bits and then masking with 0xFF
-        low_byte = data & 0xFF  # Extract the low byte by masking with 0xFF
-        
-        # Combine the two 8-bit values to form a single 16-bit value
-        raw_value = (high_byte << 8) | low_byte
-        
-        # Interpret the 16-bit raw value as a signed integer (2's complement)
-        if raw_value & 0x8000:  # if the sign bit is set
-            adc_value = raw_value - 0x10000
-        else:
-            adc_value = raw_value
-        
-        # Convert the ADC value to current (in mA) as the step size is 1mA
-        current = adc_value  # The step size is 1mA
-    
-        return f"IBUS ADC Current: {current} mA"    
+        if data & 0x8000:
+            data = -(0x10000 - data)
+        return f"IBUS ADC Current: {data} mA"    
     ###################
     if reg_addr == 0x30:
         adc_channels = {
