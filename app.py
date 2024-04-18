@@ -1389,7 +1389,7 @@ def main():
         if reg_info:
             data = read_register_data(reg_addr, length)
             description = interpret_register_data(reg_addr, data)
-            binary_value = f'{data:02b}' if isinstance(data, int) else ' '.join([f'{byte:02b}' for byte in data])
+            binary_value = f'{data:02b}' if isinstance(data, int) else ''.join([f'{byte:02b}' for byte in data])
             return render_template("index.html",registers=registers, reg_name=reg_info[0], binary_value=binary_value, description=description,SYSADC= randint(1,10))
     else:
         # Pass the whole dictionary to the template and handle it there
