@@ -5,17 +5,14 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <style type='text/css'>
         body {
-          background-color: navy
+          background-color: navy;
         }
         
-        h1 {
-          color: gold;
+        h1, h2, p {
+          color: gold; /* Adjusted for consistency */
           text-align: center;
         }
         
-        h2 {
-          color: blue;
-        }
         p {
             color: red;
         }
@@ -24,7 +21,7 @@
 <body>
 
     <h1>I2C Register Data Viewer</h1>
-    <p value="{{SYSADC}}">{{SYSADC}}</p>
+    <p id="SYSADC" value="{{SYSADC}}">{{SYSADC}}</p> <!-- Make sure this ID is used in JavaScript if needed -->
     <script>
       function updateData() {
           fetch('/update')
@@ -35,7 +32,7 @@
                   document.getElementById('description').textContent = data.description;
               });
       }
-      setInterval(updateData, 500); // Update every 5000 ms (5 seconds)
+      setInterval(updateData, 2000); // Adjusted to 2000 ms for clarity
     </script>
     <form action="/" method="post">
         <select class="form-select" aria-label="Default select example" name="register">
@@ -46,12 +43,9 @@
         <button type="submit">View Data</button>
     </form>
     <div>
-      <h1 id="reg_name">Register Name</h1>
+      <h2 id="reg_name">Register Name</h2> <!-- Ensure this is h2 to match your style -->
       <p id="binary_value">Binary Value</p>
       <p id="description">Description</p>
     </div>
-    
-    
-
 </body>
 </html>

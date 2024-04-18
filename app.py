@@ -1,11 +1,11 @@
 
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 import RPi.GPIO as GPIO
 import random
 import smbus
 from time import sleep
 from random import randint
-import json
+
 
 app = Flask(__name__)   # Create an instance of flask called "app"
 bus = smbus.SMBus(1)
@@ -1367,11 +1367,14 @@ def interpret_register_data(reg_addr, data):
 
 @app.route("/update")
 def update():
-    # Simulate updating the register data
-    random_value = randint(0, 255)  # Generate a new random value
-    register_data = [registers[0x01][0],f"Updated description with value {random_value}",f"{random_value:08b}"]  # Update binary value
-    
-    return json.dumps(register_data)  # Return updated data as JSON
+    # Assuming you have some logic to get data
+    random_value = randint(0, 255)
+    reg_info = {"Register1", "Some description based on new data"}
+    return jsonify({
+        'reg_name': reg_info[0],
+        'binary_value': f'{random_value:08b}',
+        'description': reg_info[1]
+    })
 
 @app.route("/", methods=['GET', 'POST'])
 def main():
