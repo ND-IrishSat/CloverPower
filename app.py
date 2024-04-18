@@ -1365,34 +1365,39 @@ def interpret_register_data(reg_addr, data):
     #             st.text(f"Description: {description}")
     #             st.write("---")  # Add a separator
 
+def combine_bytes(byte_list):
+    result = 0
+    for byte in byte_list:
+        result = (result << 8) | byte
+    return result
+
 @app.route("/update")
 def update():
     try:
-        # Reading the VSYS_ADC voltage
-        syspow = read_register_data(0x3D, 2)
-        if syspow is None:
-            raise ValueError("Failed to read data")
+        data = {}
+        # Read from multiple registers and process the data
+        registers = {
+            0x31: "IBUS_ADC",
+            0x33: "IBAT_ADC",
+            0x35: "VBUS_ADC",
+            0x3B: "VBAT_ADC"
+        }
+        for reg_addr, reg_name in registers.items():
+            raw_data = read_register_data(reg_addr, 2)
+            if raw_data is None:
+                raise ValueError(f"Failed to read data from {reg_name}")
+            
+            # Combine byte data into an integer
+            combined_data = combine_bytes(raw_data)
+            
+            # Convert to binary string with proper padding
+            data[f'{reg_name}_binary'] = f'{combined_data:016b}'
+            
+            # Get the human-readable description
+            description = interpret_register_data(reg_addr, combined_data)
+            data[f'{reg_name}_description'] = description
 
-        # Assuming syspow returns a list of bytes and we need to combine them
-        if isinstance(syspow, list):
-            combined_data = 0
-            for byte in syspow:
-                combined_data = (combined_data << 8) | byte
-        else:
-            combined_data = syspow
-
-        # Convert to binary string with proper padding
-        binary_value = f'{combined_data:016b}'  # Adjust bit width as needed
-
-        # Get the human-readable description
-        description = interpret_register_data(0x3D, combined_data)
-        reg_info = ("System Power", description)
-
-        return jsonify({
-            'reg_name': reg_info[0],
-            'binary_value': binary_value,
-            'description': reg_info[1]
-        })
+        return jsonify(data)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

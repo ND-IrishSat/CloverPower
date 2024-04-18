@@ -21,21 +21,49 @@
       </style>
 </head>
 <body>
-
+  <script>
+    function updateData() {
+        fetch('/update')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('IBUS_ADC_binary').textContent = data.IBUS_ADC_binary;
+                document.getElementById('IBUS_ADC_description').textContent = data.IBUS_ADC_description;
+                document.getElementById('IBAT_ADC_binary').textContent = data.IBAT_ADC_binary;
+                document.getElementById('IBAT_ADC_description').textContent = data.IBAT_ADC_description;
+                document.getElementById('VBUS_ADC_binary').textContent = data.VBUS_ADC_binary;
+                document.getElementById('VBUS_ADC_description').textContent = data.VBUS_ADC_description;
+                document.getElementById('VBAT_ADC_binary').textContent = data.VBAT_ADC_binary;
+                document.getElementById('VBAT_ADC_description').textContent = data.VBAT_ADC_description;
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+            });
+    }
+    setInterval(updateData, 2000); // Continuously update every 2000 ms (2 seconds)
+  </script>
     <h1>I2C Register Data Viewer</h1>
+    <div>
+      <h2 id="IBUS_ADC">IBUS ADC</h2>
+      <p id="IBUS_ADC_binary">Binary Value</p>
+      <p id="IBUS_ADC_description">Description</p>
+    </div>
+    <div>
+      <h2 id="IBAT_ADC">IBAT ADC</h2>
+      <p id="IBAT_ADC_binary">Binary Value</p>
+      <p id="IBAT_ADC_description">Description</p>
+    </div>
+    <div>
+      <h2 id="VBUS_ADC">VBUS ADC</h2>
+      <p id="VBUS_ADC_binary">Binary Value</p>
+      <p id="VBUS_ADC_description">Description</p>
+    </div>
+    <div>
+      <h2 id="VBAT_ADC">VBAT ADC</h2>
+      <p id="VBAT_ADC_binary">Binary Value</p>
+      <p id="VBAT_ADC_description">Description</p>
+    </div>
     
-    <script>
-      function updateData() {
-          fetch('/update')
-              .then(response => response.json())
-              .then(data => {
-                  document.getElementById('SYSPOW').textContent = data.reg_name;
-                  document.getElementById('binary_value').textContent = data.binary_value;
-                  document.getElementById('description').textContent = data.description;
-              });
-      }
-      setInterval(updateData, 2000); // Adjusted to 2000 ms for clarity
-    </script>
+  
     <form action="/" method="post">
         <select class="form-select" aria-label="Default select example" name="register">
             {% for reg_addr, reg_info in registers.items() %}
@@ -44,10 +72,7 @@
         </select>
         <button type="submit">View Data</button>
     </form>
-    <div>
-      <h2 id="SYSPOW">System</h2> <!-- Ensure this is h2 to match your style -->
-      <p id="binary_value">Binary Value</p>
-      <p id="description">Description</p>
-    </div>
+    
+    
 </body>
 </html>
