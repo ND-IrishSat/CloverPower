@@ -32,6 +32,5 @@ new_value4 = 0b10110000
 bus.write_byte_data(device_address, register_address, new_value)
 bus.write_byte_data(device_address, register_address2, new_value2)
 bus.write_byte_data(device_address, register_address3, new_value3)
-
-
+bus.write_byte_data(device_address, register_address4, new_value4s)
          
