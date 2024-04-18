@@ -1365,6 +1365,7 @@ def interpret_register_data(reg_addr, data):
     #             st.text(f"Description: {description}")
     #             st.write("---")  # Add a separator
 
+@app.route("/update")
 def update():
     try:
         # Reading the VSYS_ADC voltage
@@ -1388,12 +1389,13 @@ def update():
         reg_info = ("System Power", description)
 
         return jsonify({
-            'reg_name': reg_info[0],  # Use 'reg_name' instead of 'SYSreg_name'
-            'binary_value': binary_value,  # Use 'binary_value' instead of 'SYSbinary_value'
-            'description': reg_info[1]  # Use 'description' instead of 'SYSdescription'
+            'reg_name': reg_info[0],
+            'binary_value': binary_value,
+            'description': reg_info[1]
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 @app.route("/", methods=['GET', 'POST'])
 def main():
     if request.method == 'POST':
