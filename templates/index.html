@@ -29,7 +29,7 @@
           fetch('/update')
               .then(response => response.json())
               .then(data => {
-                  document.getElementById('reg_name').textContent = data.reg_name;
+                  document.getElementById('SYSPOW').textContent = data.reg_name;
                   document.getElementById('binary_value').textContent = data.binary_value;
                   document.getElementById('description').textContent = data.description;
               });
@@ -45,7 +45,7 @@
         <button type="submit">View Data</button>
     </form>
     <div>
-      <h2 id="reg_name">Register Name</h2> <!-- Ensure this is h2 to match your style -->
+      <h2 id="SYSADC">System Power</h2> <!-- Ensure this is h2 to match your style -->
       <p id="binary_value">Binary Value</p>
       <p id="description">Description</p>
     </div>

@@ -1367,12 +1367,14 @@ def interpret_register_data(reg_addr, data):
 
 @app.route("/update")
 def update():
-    random_value = randint(0, 255)
+    SYSPOW = read_register_data(0x3D,2)
+    binary_value = f'{SYSPOW:02b}' if isinstance(SYSPOW, int) else ' '.join([f'{byte:02b}' for byte in SYSPOW])
+    description = interpret_register_data(0x3D, 2)
     # Correctly define reg_info as a tuple, not a set
-    reg_info = ("Register1", f"Description with value {random_value}")
+    reg_info = ("System Power", f"{description}")
     return jsonify({
         'reg_name': reg_info[0],    # Accesses the first element of the tuple
-        'binary_value': f'{random_value:08b}',  # Formats the number as an 8-bit binary
+        'binary_value': f'{binary_value:08b}',  # Formats the number as an 8-bit binary
         'description': reg_info[1]  # Accesses the second element of the tuple
     })
 
