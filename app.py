@@ -1385,23 +1385,27 @@ def update():
         return jsonify(data)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
-@app.route("/", methods=['GET', 'POST'])
-def main():
+    
+@app.route('/', methods=['GET', 'POST'])
+def index():
     if request.method == 'POST':
-        register_data = request.form['register']
-        reg_addr, length = register_data.split(',')  # Splitting the string into two parts
-        reg_addr = int(reg_addr)  # Convert reg_addr to integer
-        length = int(length)  # Convert length to integer
-        reg_info = registers.get(reg_addr)
-        if reg_info:
-            data = read_register_data(reg_addr, length)
-            description = interpret_register_data(reg_addr, data)
-            binary_value = f'{data:02b}' if isinstance(data, int) else ' '.join([f'{byte:02b}' for byte in data])
-            return render_template("index.html",registers=registers, reg_name=reg_info[0], binary_value=binary_value, description=description)
+        # Extract the selected register data
+        register_data = request.form['register'].split(',')
+        reg_addr = register_data[0]
+        reg_info = register_data[1]  # Assuming reg_info[1] is expected here; adjust as needed
+
+        # Mock-up: Replace these with actual data fetching based on reg_addr or reg_info
+        context = {
+            'reg_name': 'Some Register Name',
+            'binary_value': '01010101',  # Example binary value
+            'description': 'Description of the register'
+        }
+
+        return render_template('view_data.html', **context)
     else:
-        # Pass the whole dictionary to the template and handle it there
-        return render_template("index.html", registers=registers,allen = "Allen is cool")
+        # Return index with required data for GET requests
+        return render_template('index.html')
+
 
 # The magic happens here. When some http request comes in with a path of
 #  gpio/x/y, the Flask app will attempt to parse that as x=pin and y=level.
