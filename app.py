@@ -1387,28 +1387,29 @@ def update():
     
 
 
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
         register_data = request.form['register'].split(',')
         reg_addr = int(register_data[0])
-        reg_length = registers[reg_addr][1]  # Assuming that length is the second item in the tuple
+        reg_info = registers[reg_addr]
 
-        data = read_register_data(reg_addr, reg_length)
+        data = read_register_data(reg_addr, reg_info[1])  # Assuming length is stored as second item
         description = interpret_register_data(reg_addr, data)
         binary_value = f'{data:02b}' if isinstance(data, int) else ' '.join([f'{byte:02b}' for byte in data])
 
         context = {
-            'registers': registers,  # Pass registers to the template again for re-rendering
-            'reg_name': registers[reg_addr][0],  # Get the name of the register
+            'reg_name': reg_info[0],
             'binary_value': binary_value,
             'description': description
         }
 
-        return render_template('index.html', **context)
+        return render_template('view_data.html', **context)
     else:
-        # Pass 'registers' here so it's available when the template first loads
+        # Ensure 'registers' is available on initial GET request
         return render_template('index.html', registers=registers)
+
 # The magic happens here. When some http request comes in with a path of
 #  gpio/x/y, the Flask app will attempt to parse that as x=pin and y=level.
 #  Note that there is no error handling here! Failure to properly specify the
