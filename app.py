@@ -175,7 +175,7 @@ def interpret_register_data(reg_addr, data):
     if reg_addr == 0x35:
         if data & 0x8000:
             data = -(0x10000 - data)
-        return f"IBUS ADC Current: {data} mV"
+        return f"VBUS ADC Voltage: {data} mV"
 
     ###################
     if reg_addr == 0x33:  # IBAT_ADC register
