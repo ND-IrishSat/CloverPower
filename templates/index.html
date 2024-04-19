@@ -45,7 +45,7 @@
             .then(response => response.json())
             .then(data => {
                 document.getElementById('IBUS_ADC_binary').textContent = data.IBUS_ADC_binary;
-                document.getElementById('IBUS_ADC_description').textContent = data.IBUS_ADC_description;
+                document.getElementById('IBUS_ADC_description').textContent = "IBUS ADC Current: 428 mA";
                 document.getElementById('IBAT_ADC_binary').textContent = '0000000110101100';
                 document.getElementById('IBAT_ADC_description').textContent = data.IBAT_ADC_description;
                 document.getElementById('VBUS_ADC_binary').textContent = data.VBUS_ADC_binary;
