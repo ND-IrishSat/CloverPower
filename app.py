@@ -1386,6 +1386,7 @@ def update():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
