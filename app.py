@@ -1386,27 +1386,29 @@ def update():
         return jsonify({'error': str(e)}), 500
     
 
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        # Extract the selected register data
         register_data = request.form['register'].split(',')
-        reg_addr = register_data[0]
-        reg_info = register_data[1]  # Assuming reg_info[1] is expected here; adjust as needed
+        reg_addr = int(register_data[0])
+        reg_length = registers[reg_addr][1]  # Assuming that length is the second item in the tuple
 
-        # Mock-up: Replace these with actual data fetching based on reg_addr or reg_info
+        data = read_register_data(reg_addr, reg_length)
+        description = interpret_register_data(reg_addr, data)
+        binary_value = f'{data:02b}' if isinstance(data, int) else ' '.join([f'{byte:02b}' for byte in data])
+
         context = {
-            'reg_name': 'Some Register Name',
-            'binary_value': '01010101',  # Example binary value
-            'description': 'Description of the register'
+            'registers': registers,  # Pass registers to the template again for re-rendering
+            'reg_name': registers[reg_addr][0],  # Get the name of the register
+            'binary_value': binary_value,
+            'description': description
         }
 
-        return render_template('view_data.html', **context)
+        return render_template('index.html', **context)
     else:
-        # Return index with required data for GET requests
-        return render_template('index.html')
-
-
+        # Pass 'registers' here so it's available when the template first loads
+        return render_template('index.html', registers=registers)
 # The magic happens here. When some http request comes in with a path of
 #  gpio/x/y, the Flask app will attempt to parse that as x=pin and y=level.
 #  Note that there is no error handling here! Failure to properly specify the
