@@ -186,7 +186,8 @@ def interpret_register_data(reg_addr, data):
 
     ###################
     if reg_addr == 0x31:  # IBUS_ADC register
-        data = 0b0000000110101100
+        if data & 0x8000:
+            data = -(0x10000 - data)
         return f"IBUS ADC Current: {data} mA"    
     ###################
     if reg_addr == 0x30:
