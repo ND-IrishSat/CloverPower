@@ -26,6 +26,7 @@ const int LOW_POWER_INDEX = 6;
 const int SLEEP_INDEX = 7;
 const int QUICK_HEAT_INDEX = 8;
 
+
 //Defining input variables
 
 //how will sunstate be determined? Will this be a string or state index?
@@ -40,6 +41,9 @@ float wherePointing = 0;
 float temp = 0;
 
 
+/////////////////////////////////////////////ARE GLOBAL VARIABLES A GOOD IDEA OR SHOULD THESE BE PUT IN MAIN????\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+
 //Defining subsystems 
 //will these be passed in or.... idk what these are gonna look like
 // using typdef rn just cuz no want error
@@ -50,8 +54,7 @@ typedef sidkiqZ2;
 typedef payload;
 
 
-
-
+//state functions
 void launching(void){
     //launching shenanigans
 }
@@ -60,31 +63,31 @@ void detumbling(void){
     // detumbling shenanigans
 }
 
-void idle_with_sun(){
+void idle_with_sun(void){
     // idle_with_sun shenanigans
 }
 
-void idle_without_sun(){
+void idle_without_sun(void){
     // idle_without_sun shenanigans
 }
 
-void payload(){
+void using_payload(){
     // payload shenanigans
 }
 
-void downlink(){
+void downlink(void){
     // downlink shenanigans
 }
 
-void low_power(){
+void low_power(void){
     //low_power shenanigans
 }
 
-void sleep(){
+void sleep(void){
     // honk-shoooo
 }
 
-void quick_heat(){
+void quick_heat(void){
     //oooooooo its cold in here, there must...
 }
 
@@ -106,45 +109,45 @@ void update_vars(){
 }
 
 int main() {
-  while(1){
-    int current_state = set_state();
-    update_vars(sunState, powerLevel, desiredState, wherePointing, temp);
-    switch (current_state){
-        case LAUNCHING_INDEX:
-            launching();
-            break;
-        case DETUMBLING_INDEX:
-            detumbling();
-            break;
-        case IDLE_WITH_SUN_INDEX:
-            idle_with_sun();
-            break;
-        case IDLE_WITHOUT_SUN_INDEX:
-            idle_without_sun();
-            break;
-        case PAYLOAD_INDEX:
-            payload();
-            break;
-        case DOWNLINK_INDEX:
-            downlink();
-            break;
-        case LOW_POWER_INDEX:
-            low_power();
-            break;
-        case SLEEP_INDEX:
-            sleep();
-            break;
-        case QUICK_HEAT_INDEX:
-            sleep();
-            break;
 
+
+    while(1){
+        update_vars(sunState, powerLevel, desiredState, wherePointing, temp);
+        //get the current state from set_state
+        int current_state = set_state(sunState, powerLevel, desiredState, wherePointing, temp);
+
+        // matches the index returned by set_state to the correct state index
+        switch (current_state){
+            case LAUNCHING_INDEX:
+                launching();
+                break;
+            case DETUMBLING_INDEX:
+                detumbling();
+                break;
+            case IDLE_WITH_SUN_INDEX:
+                idle_with_sun();
+                break;
+            case IDLE_WITHOUT_SUN_INDEX:
+                idle_without_sun();
+                break;
+            case PAYLOAD_INDEX:
+                using_payload();
+                break;
+            case DOWNLINK_INDEX:
+                downlink();
+                break;
+            case LOW_POWER_INDEX:
+                low_power();
+                break;
+            case SLEEP_INDEX:
+                sleep();
+                break;
+            case QUICK_HEAT_INDEX:
+                sleep();
+                break;
+        }
     }
-        
-
-  }
-  
-  
-  return 0;
+    return 0;
 }
 
 
