@@ -4,27 +4,27 @@
 
 //State string constants
 //idk maybe unnecessary
-static char* LAUNCHING_STRING = "Launching";
-static char* DETUMBLING_STRING = "Detumbling";
-static char* IDLE_WITH_SUN_STRING = "Idle With Sun";
-static char* IDLE_WITHOUT_SUN_STRING = "Idle Without Sun";
-static char* PAYLOAD_STRING  = "Payload";
-static char* DOWNLINK_STRING = "Downlink";
-static char* LOW_POWER_STRING = "Low Power";
-static char* SLEEP_STRING = "Sleep";
-static char* QUICK_HEAT_STRING = "Quick Heat";
+const char* LAUNCHING_STRING = "Launching";
+const char* DETUMBLING_STRING = "Detumbling";
+const char* IDLE_WITH_SUN_STRING = "Idle With Sun";
+const char* IDLE_WITHOUT_SUN_STRING = "Idle Without Sun";
+const char* PAYLOAD_STRING  = "Payload";
+const char* DOWNLINK_STRING = "Downlink";
+const char* LOW_POWER_STRING = "Low Power";
+const char* SLEEP_STRING = "Sleep";
+const char* QUICK_HEAT_STRING = "Quick Heat";
 
 //States as integers
 //necessary for switch statement?
-static int LAUNCHING_INDEX = 0;
-static int DETUMBLING_INDEX = 1;
-static int IDLE_WITH_SUN_INDEX = 2;
-static int IDLE_WITHOUT_SUN_INDEX = 3;
-static int PAYLOAD_INDEX  = 4;
-static int DOWNLINK_INDEX = 5;
-static int LOW_POWER_INDEX = 6;
-static int SLEEP_INDEX = 7;
-static int QUICK_HEAT_INDEX = 8;
+const int LAUNCHING_INDEX = 0;
+const int DETUMBLING_INDEX = 1;
+const int IDLE_WITH_SUN_INDEX = 2;
+const int IDLE_WITHOUT_SUN_INDEX = 3;
+const int PAYLOAD_INDEX  = 4;
+const int DOWNLINK_INDEX = 5;
+const int LOW_POWER_INDEX = 6;
+const int SLEEP_INDEX = 7;
+const int QUICK_HEAT_INDEX = 8;
 
 //Defining input variables
 
@@ -110,9 +110,6 @@ int main() {
     int current_state = set_state();
     update_vars(sunState, powerLevel, desiredState, wherePointing, temp);
     switch (current_state){
-
-//FOR ALL CASE VARIABLES IT SAYS "expression must have a constant value"
-//I DONT KNOW HOW TO FIX
         case LAUNCHING_INDEX:
             launching();
             break;
