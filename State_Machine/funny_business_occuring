@@ -1,2 +1,3 @@
 Log: 
 9/24/24 - Just made a template for what the state machine could look like. Need subsystem code and input code to figure out how this is going together.
+9/25/24 - Added some commments, should subsystems and variables be global or defined within the main function? 
