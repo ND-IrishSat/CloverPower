@@ -71,7 +71,7 @@ void idle_without_sun(void){
     // idle_without_sun shenanigans
 }
 
-void using_payload(){
+void using_payload(void){
     // payload shenanigans
 }
 
