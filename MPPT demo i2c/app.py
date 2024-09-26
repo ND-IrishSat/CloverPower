@@ -31,7 +31,9 @@ registers = {
     0x12: ("REG12_Charger_Control_3", 1),
     0x13: ("REG13_Charger_Control_4", 1),
     0x14: ("REG14_Charger_Control_5", 1),
+    # huge
     0x15: ("REG15_MPPT_Control", 1),
+
     0x16: ("REG16_Temperature_Control", 1),
     0x17: ("REG17_NTC_Control_0", 1),
     0x18: ("REG18_NTC_Control_1", 1),
@@ -58,6 +60,7 @@ registers = {
     0x2E: ("REG2E_ADC_Control", 1),
     0x2F: ("REG2F_ADC_Function_Disable_0", 1),
     0x30: ("REG30_ADC_Function_Disable_1", 1),
+    # voltage  (Anolog to digital conversions (ADCa))
     0x31: ("REG31_IBUS_ADC", 2),
     0x33: ("REG33_IBAT_ADC", 2),
     0x35: ("REG35_VBUS_ADC", 2),
@@ -69,6 +72,7 @@ registers = {
     0x41: ("REG41_TDIE_ADC", 2),
     0x43: ("REG43_D+_ADC", 2),
     0x45: ("REG45_D-_ADC", 2),
+
     0x47: ("REG47_DPDM_Driver", 1),
     0x48: ("REG48_Part_Information", 1),
 }
@@ -659,7 +663,7 @@ def interpret_register_data(reg_addr, data):
         # Dictionary to hold the status messages for each bit
         bit_messages = {
             'CHG_STAT': {
-                0: "Not Charging",
+                0: "Noht Charging",
                 1: "Trickle Charge",
                 2: "Pre Charge",
                 3: "Fast Charge (CC mode)",

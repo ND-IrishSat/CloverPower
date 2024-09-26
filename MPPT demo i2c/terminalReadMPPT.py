@@ -1,6 +1,9 @@
 import curses
 import smbus
 
+#WHERE ALL THE STUFF GOES DOWN
+#DATA COLLECTION
+
 # Initialize I2C bus
 bus = smbus.SMBus(1)
 device_address = 0x6B  # Example device address; replace with your actual devic>

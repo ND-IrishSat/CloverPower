@@ -1,0 +1,14 @@
+9/26/24 "Grounding in truth" discussion:
+
+
+NOTES:
+RP2040 Chip
+Has low power and sleep states
+- pin high/low to configure sleep or timer
+
+Sun Power Mode
+- when batter power <=20%, point towards the sun
+
+MPPT BOARD (val's work)
+- Able to pull state of charge
+- Always on

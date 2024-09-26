@@ -27,18 +27,28 @@ const int SLEEP_INDEX = 7;
 const int QUICK_HEAT_INDEX = 8;
 
 
+
+
+
+
+
 //Defining input variables
 
 //how will sunstate be determined? Will this be a string or state index?
 int sunState = 0;
 //create function that converts power level to percentage if not already?
-float powerLevel = 0;
+float state_of_charge = 0;
 //how will events be scheduled?
 int desiredState = 0;
 //idk how this is measured in one var?
 float wherePointing = 0;
 //hawt
 float temp = 0;
+
+//solar pannel vars
+int solar_pwr = 0;
+
+
 
 
 /////////////////////////////////////////////ARE GLOBAL VARIABLES A GOOD IDEA OR SHOULD THESE BE PUT IN MAIN????\\\\\\\\\\\\\\\\\\\\\\\\\\\
@@ -112,9 +122,9 @@ int main() {
 
 
     while(1){
-        update_vars(sunState, powerLevel, desiredState, wherePointing, temp);
+        update_vars(sunState, state_of_charge, desiredState, wherePointing, temp);
         //get the current state from set_state
-        int current_state = set_state(sunState, powerLevel, desiredState, wherePointing, temp);
+        int current_state = set_state(sunState, state_of_charge, desiredState, wherePointing, temp);
 
         // matches the index returned by set_state to the correct state index
         switch (current_state){
