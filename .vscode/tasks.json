@@ -1,28 +1,22 @@
 {
 	"version": "2.0.0",
 	"tasks": [
-		{
-			"type": "cppbuild",
-			"label": "C/C++: gcc.exe build active file",
-			"command": "C:\\MinGW\\bin\\gcc.exe",
-			"args": [
-				"-fdiagnostics-color=always",
-				"-g",
-				"${file}",
-				"-o",
-				"${fileDirname}\\${fileBasenameNoExtension}.exe"
-			],
-			"options": {
-				"cwd": "${fileDirname}"
-			},
-			"problemMatcher": [
-				"$gcc"
-			],
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
-			"detail": "compiler: C:\\MinGW\\bin\\gcc.exe"
-		}
+	  {
+		"label": "build i2c_monitor",
+		"type": "shell",
+		"command": "gcc",
+		"args": [
+		  "-o",
+		  "i2c_monitor",
+		  "i2c_monitor.c",
+		  "-lncurses"
+		],
+		"group": {
+		  "kind": "build",
+		  "isDefault": true
+		},
+		"problemMatcher": ["$gcc"],
+		"detail": "Generated task for compiling C code"
+	  }
 	]
-}
+  }
