@@ -136,6 +136,32 @@ void display_data() {
     endwin(); // End curses mode
 }
 
+float get_volatage(){
+    //array for two bytes of data from 0x3B (hex address) which returns voltage
+    //of the battery in bits
+    unsigned char data[2] = {0};
+    //if 0 was returned, there was a reading error
+    if(read_register_data(0x3B, 2,data == 0)){
+        //Converts the 2-byte data into an integer that is 16 bits long and presserves the position of 
+        // data[0] as the high bit and data[1] as the low bit
+        //ie if it data[0] = 00100100 and data[1] = 00000001
+        //raw_value = 00100100 00000001
+        int raw_value = (data[0]<<8) | data[1];
+
+        // converstion factor is (1/1000) (milivolts/volts)
+        //page 117 of the MPPT datasheet
+        float voltage = raw_value*(1/1000);
+        //returns voltage of the battery in volts
+        return volatage
+
+
+    }
+    //will return an error value there was a read error
+    return -1.0;
+
+
+}
+
 int main() {
     // Open the I2C device file
     i2c_fd = open("/dev/i2c-1", O_RDWR);
