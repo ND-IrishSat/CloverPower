@@ -1,9 +1,9 @@
+#include "i2c_utils.h"
 #include <stdio.h>
 #include <string.h>
 //import subsystem classes here?? 
 
 //State string constants
-//idk maybe unnecessary
 const char* LAUNCHING_STRING = "Launching";
 const char* DETUMBLING_STRING = "Detumbling";
 const char* IDLE_WITH_SUN_STRING = "Idle With Sun";
@@ -26,12 +26,6 @@ const int LOW_POWER_INDEX = 6;
 const int SLEEP_INDEX = 7;
 const int QUICK_HEAT_INDEX = 8;
 
-
-
-
-
-
-
 //Defining input variables
 
 //how will sunstate be determined? Will this be a string or state index?
@@ -49,20 +43,40 @@ float temp = 0;
 int solar_pwr = 0;
 
 
-
-
 /////////////////////////////////////////////ARE GLOBAL VARIABLES A GOOD IDEA OR SHOULD THESE BE PUT IN MAIN????\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 
 //Defining subsystems 
 //will these be passed in or.... idk what these are gonna look like
 // using typdef rn just cuz no want error
-typedef IMU;
-typedef reactionWheels;
-typedef magnetorquers;
-typedef sidkiqZ2;
-typedef payload;
+typedef struct {
+    int power_required;
+    int status;
+}IMU;
+typedef struct {
+    int power_required;
+    int status;
+}reactionWheels;
+typedef struct{
+    int power_required;
+    int status;
+}magnetorquers;
+typedef struct{
+    int power_required;
+    int status;
+}sidkiqZ2;
 
+typedef struct{
+    int power_required;
+    int status;    
+}payload;
+
+// Function prototypes
+int run_IMU_script(IMU *imu);
+int run_reactionWheels_script(reactionWheels *rw);
+int run_magnetorquers_script(magnetorquers *mq);
+int run_sidkiqZ2_script(sidkiqZ2 *sq);
+int run_payload_script(payload *pl);
 
 //state functions
 void launching(void){
