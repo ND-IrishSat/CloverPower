@@ -152,7 +152,7 @@ float get_volatage(){
         //page 117 of the MPPT datasheet
         float voltage = raw_value*(1/1000);
         //returns voltage of the battery in volts
-        return volatage
+        return voltage
 
 
     }
