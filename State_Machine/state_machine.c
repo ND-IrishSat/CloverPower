@@ -125,11 +125,11 @@ int set_state(sunState, powerLevel, desiredState, wherePointing, temp) {
 
 //idk if this will work or if there needs to be seperate update methods with return values for each variable
 void update_vars(){
-    int sunState = 0;   
-    float powerLevel = 0;
-    int desiredState = 0;
-    float wherePointing = 0;
-    float temp = 0;
+    sunState = 0;   
+    state_of_charge = 0;
+    desiredState = 0;
+    wherePointing = 0;
+    temp = 0;
 }
 
 int main() {
@@ -167,7 +167,7 @@ int main() {
                 sleep();
                 break;
             case QUICK_HEAT_INDEX:
-                sleep();
+                quick_heat();
                 break;
         }
     }
