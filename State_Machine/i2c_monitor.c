@@ -136,7 +136,7 @@ void display_data() {
     endwin(); // End curses mode
 }
 
-float get_volatage(){
+float get_voltage(){
     //array for two bytes of data from 0x3B (hex address) which returns voltage
     //of the battery in bits
     unsigned char data[2] = {0};
