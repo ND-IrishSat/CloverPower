@@ -123,7 +123,7 @@ void display_data() {
     cbreak();             // Disable line buffering
     curs_set(0);          // Hide cursor
     nodelay(stdscr, TRUE); // Make getch() non-blocking
-
+    int count = 0;
     while (1) {
         clear();
         for (int i = 0; i < (int)(sizeof(registers) / sizeof(RegisterInfo)); i++) {
@@ -144,7 +144,8 @@ void display_data() {
         } else {
             printw("Battery Voltage: Error reading\n");
         }
-
+        printw("%d\n", count);
+        count++;
         refresh();
 
         int key = getch();
@@ -152,7 +153,7 @@ void display_data() {
             break; // Exit loop on 'q'
         }
 
-        usleep(500000); // Sleep for 500 milliseconds
+        usleep(500); // Sleep for 500 milliseconds
     }
 
     endwin(); // End curses mode
