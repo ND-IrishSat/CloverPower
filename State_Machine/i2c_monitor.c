@@ -122,6 +122,8 @@ void display_data() {
                 }
                 printw("\n");
             }
+            printw("%d", get_voltage());
+            printw("\n");
         }
         refresh();
 
@@ -169,7 +171,7 @@ int main() {
         perror("Failed to open the i2c bus.\n");
         return 1;
     }
-    
+
     display_data();
 
     close(i2c_fd);
