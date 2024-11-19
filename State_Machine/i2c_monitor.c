@@ -156,7 +156,7 @@ void display_data() {
             break; // Exit loop on 'q'
         }
 
-        usleep(500000); // Sleep for 500 milliseconds
+        usleep(100000); // Sleep for 500 milliseconds
     }
 
     endwin(); // End curses mode
