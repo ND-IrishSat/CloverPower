@@ -104,6 +104,19 @@ int read_register_data(int reg_addr, int length, unsigned char *data) {
     return 0;
 }
 
+float get_voltage() {
+    unsigned char data[2] = {0};
+
+    // Correct condition to check for read error
+    if (read_register_data(0x3B, 2, data) != 0) {
+        return -1.0; // Error value
+    }
+
+    // Combine high and low bytes
+    int raw_value = (data[0] << 8) | data[1];
+    return raw_value * 0.001f; // Convert to volts (mV to V)
+}
+
 void display_data() {
     initscr();            // Start curses mode
     noecho();             // Don't echo pressed keys
@@ -113,7 +126,7 @@ void display_data() {
 
     while (1) {
         clear();
-        for (int i = 0; i < sizeof(registers) / sizeof(RegisterInfo); i++) {
+        for (int i = 0; i < (int)(sizeof(registers) / sizeof(RegisterInfo)); i++) {
             unsigned char data[2] = {0};
             if (read_register_data(i, registers[i].length, data) == 0) {
                 printw("%s (0x%02X): ", registers[i].name, i);
@@ -122,46 +135,27 @@ void display_data() {
                 }
                 printw("\n");
             }
-            printw("%d", get_voltage());
-            printw("\n");
         }
+
+        // Display battery voltage
+        float voltage = get_voltage();
+        if (voltage >= 0) {
+            printw("Battery Voltage: %.2f V\n", voltage);
+        } else {
+            printw("Battery Voltage: Error reading\n");
+        }
+
         refresh();
 
         int key = getch();
         if (key == 'q') {
-            break;  // Exit loop on 'q'
+            break; // Exit loop on 'q'
         }
 
         usleep(500000); // Sleep for 500 milliseconds
     }
 
     endwin(); // End curses mode
-}
-
-float get_voltage(){
-    //array for two bytes of data from 0x3B (hex address) which returns voltage
-    //of the battery in bits
-    unsigned char data[2] = {0};
-    //if 0 was returned, there was a reading error
-    if(read_register_data(0x3B, 2,data == 0)){
-        //Converts the 2-byte data into an integer that is 16 bits long and presserves the position of 
-        // data[0] as the high bit and data[1] as the low bit
-        //ie if it data[0] = 00100100 and data[1] = 00000001
-        //raw_value = 00100100 00000001
-        int raw_value = (data[0]<<8) | data[1];
-
-        // converstion factor is (1/1000) (milivolts/volts)
-        //page 117 of the MPPT datasheet
-        float voltage = raw_value*(1/1000);
-        //returns voltage of the battery in volts
-        return voltage
-
-
-    }
-    //will return an error value there was a read error
-    return -1.0;
-
-
 }
 
 int main() {
