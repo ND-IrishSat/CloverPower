@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>I2C Monitor Dashboard</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <h1>I2C Monitor Dashboard</h1>
+
+  <!-- Power Sensing (PAC1934) -->
+  <section id="pac1934_0x10">
+    <h2>Power Sensing (Address: 0x10)</h2>
+    <table class="device-table">
+      <thead>
+        <tr>
+          <th>Channel</th>
+          <th>Label</th>
+          <th>Voltage (V)</th>
+          <th>Current (mA)</th>
+          <th>Power (W)</th>
+        </tr>
+      </thead>
+      <tbody class="device-data">
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Power Sensing (PAC1934) -->
+  <section id="pac1934_0x17">
+    <h2>Power Sensing (Address: 0x17)</h2>
+    <table class="device-table">
+      <thead>
+        <tr>
+          <th>Channel</th>
+          <th>Label</th>
+          <th>Voltage (V)</th>
+          <th>Current (mA)</th>
+          <th>Power (W)</th>
+        </tr>
+      </thead>
+      <tbody class="device-data">
+      </tbody>
+    </table>
+  </section>
+
+  <!-- MPPT (BQ25672) -->
+  <section id="bq25672">
+    <h2>MPPT (Address: 0x6B)</h2>
+    <table class="device-table">
+      <thead>
+        <tr>
+          <th>Register</th>
+          <th>Name</th>
+          <th>Binary Value (16 bits)</th>
+          <th>Converted Value</th>
+          <th>Unit</th>
+        </tr>
+      </thead>
+      <tbody class="device-data">
+      </tbody>
+    </table>
+
+<!-- Combined Controls Table -->
+<table class="control-table">
+  <thead>
+    <tr>
+      <th>MPPT</th>
+      <th>MPPT Status</th>
+      <th>ICO</th>
+      <th>ICO Status</th>
+      <th>Charge Status</th>
+      <th>HVDCP</th>
+      <th>Voltage</th>
+      <th>ADC</th>
+      <th>Reset</th>
+      <th>Watchdog</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <button id="enable-mppt">Enable</button>
+        <button id="disable-mppt">Disable</button>
+      </td>
+      <td id="mppt-status">Off</td>
+      <td>
+        <button id="enable-ico">Enable</button>
+        <button id="disable-ico">Disable</button>
+      </td>
+      <td id="ico-status">Off</td>
+      <td id="charge-status">Not Charging</td>
+      <td>
+        <button id="enable-hvdcp">Enable</button>
+        <button id="disable-hvdcp">Disable</button>
+      </td>
+      <td>
+        <button id="set-9v">9V</button>
+        <button id="set-12v">12V</button>
+      </td>
+      <td>
+        <button id="adc-enable">Enable</button>
+        <button id="adc-disable">Disable</button>
+      </td>
+      <td>
+        <button id="bq25672-reset">Reset</button>
+      </td>
+      <td>
+        <button id="bq25672-watchdog-disable">Disable</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+  </section>
+
+  <!-- GPIO (PCA9557) -->
+  <section id="pca9557">
+    <h2>GPIO (Address: 0x18)</h2>
+    <table class="device-table">
+      <thead>
+        <tr>
+          <th>Pin</th>
+          <th>Status</th>
+          <th>Controls</th>
+        </tr>
+      </thead>
+      <tbody class="device-data">
+      </tbody>
+    </table>
+  </section>
+
+  <hr>
+  <div class="custom-forms-container">
+    <div class="custom-form">
+      <h2>Custom I2C Read</h2>
+      <form id="custom-read-form">
+        <label for="read-dev">Device Address:</label>
+        <select id="read-dev" name="dev_addr">
+          <option value="0x10">Power Sensing (0x10)</option>
+          <option value="0x17">Power Sensing (0x17)</option>
+          <option value="0x6B">MPPT (0x6B)</option>
+          <option value="0x18">GPIO (0x18)</option>
+        </select><br>
+        <label for="read-reg">Register Address (hex):</label>
+        <input type="text" id="read-reg" name="reg" placeholder="e.g. 07"><br>
+        <button type="submit">Read</button>
+      </form>
+      <div id="read-result"></div>
+    </div>
+
+    <div class="custom-form">
+      <h2>Custom I2C Write</h2>
+      <form id="custom-write-form">
+        <label for="write-dev">Device Address:</label>
+        <select id="write-dev" name="dev_addr">
+          <option value="0x10">Power Sensing (0x10)</option>
+          <option value="0x17">Power Sensing (0x17)</option>
+          <option value="0x6B">MPPT (0x6B)</option>
+          <option value="0x18">GPIO (0x18)</option>
+        </select><br>
+        <label for="write-reg">Register Address (hex):</label>
+        <input type="text" id="write-reg" name="reg" placeholder="e.g. 07"><br>
+        <label for="write-val">Value (binary, 8 bits):</label>
+        <input type="text" id="write-val" name="value" placeholder="e.g. 10101010"><br>
+        <button type="submit">Write</button>
+      </form>
+      <div id="write-result"></div>
+    </div>
+  </div>
+
+  <script src="/static/main.js"></script>
+</body>
+</html>
